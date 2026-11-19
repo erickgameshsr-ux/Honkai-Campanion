@@ -76,10 +76,30 @@
     }).join("");
   }
 
-  function vRessources(sub) {
-    const list = sub === "yt" ? DATA_RESSOURCES.youtube : DATA_RESSOURCES.sites;
-    return `<div class="grid">${list.map((r) => card(`<h3>${esc(r.nom)}</h3><p>${esc(r.desc)}</p>${link(r.url, "Ouvrir le lien")}`)).join("")}</div>`;
+function vRessources(sub) {
+  const R = RESSOURCES_DATA;
+  if (sub === "yt") {
+    return `<p class="muted">${esc(R.youtubeNote)}</p>
+    <div class="grid">${R.chainesYoutube.map((c) => card(
+      `<div class="chan">
+        <img class="avatar" src="${safeUrl(c.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer">
+        <h3>${esc(c.nom)}</h3>
+      </div>
+      ${c.leaks ? badges(['<span class="badge b-leaks">Leaks</span>']) : ""}
+      <p>${esc(c.description)}</p>
+      ${link(c.url, "Ouvrir la chaîne")}`)).join("")}</div>`;
   }
+  return `<div class="grid">${R.sites.map((s) => card(
+    `${badges([`<span class="badge b-element">${esc(s.categorie)}</span>`])}
+    <h3>${esc(s.nom)}</h3><p>${esc(s.description)}</p>
+    ${link(s.url, "Ouvrir le site")}`)).join("")}</div>`;
+}
+
+// Masque l'avatar s'il ne se charge pas (lien expiré, par exemple)
+document.addEventListener("error", (e) => {
+  if (e.target.classList && e.target.classList.contains("avatar")) e.target.style.visibility = "hidden";
+}, true);
+  
   function vVeille(sub) {
     const list = sub === "futur" ? DATA_VEILLE.futur : DATA_VEILLE.beta;
     return `<div class="grid">${list.map((x) => card(`${badges([`<span class="badge b-tier">${esc(x.statut)}</span>`])}<h3>${esc(x.titre)}</h3><p class="muted">${esc(x.date)}</p><p>${esc(x.texte)}</p>`)).join("")}</div>`;
