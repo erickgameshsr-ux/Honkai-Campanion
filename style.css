@@ -97,3 +97,9 @@ dialog textarea{width:100%}
 .fade{animation:fade .25s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+
+/* ===== Ressources : chaînes YouTube ===== */
+.chan{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.chan h3{margin:0}
+.avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none;border:1px solid var(--line);background:var(--panel-2)}
+.b-leaks{color:var(--gold);border-color:rgba(240,185,74,.4)}
