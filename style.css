@@ -6,8 +6,35 @@
   --shadow:0 6px 20px rgba(0,0,0,.35); --t:.2s ease;
 }
 *{box-sizing:border-box}
-html,body{margin:0;overflow-x:hidden}
-body{background:var(--bg);color:var(--text);font:16px/1.55 "Segoe UI",system-ui,sans-serif}
+html{background:var(--bg);overflow-x:hidden}
+body{margin:0;overflow-x:hidden;background:transparent;color:var(--text);font:16px/1.55 "Segoe UI",system-ui,sans-serif}
+
+/* ===== Fond d'écran (PC par défaut) ===== */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  background:url("assets/wallpapers/wallpaperHC1-1920.jpg") center/cover no-repeat;
+}
+
+/* Voile sombre par-dessus l'image (0.72 = assombrissement ; augmentez pour plus sombre) */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-1;
+  background:rgba(8,7,12,.72);
+  pointer-events:none;
+}
+
+/* Tablette et mobile : version allégée, cadrage décalé vers la droite */
+@media (max-width:959px){
+  body::before{
+    background-image:url("assets/wallpapers/wallpaperHC1-1280.jpg");
+    background-position:60% center;
+  }
+}
 h1,h2,h3{line-height:1.25;margin:0 0 .5em}
 h1{font-size:1.6rem} h2{font-size:1.2rem} h3{font-size:1.05rem}
 a{color:var(--accent)} p{margin:.3em 0}
