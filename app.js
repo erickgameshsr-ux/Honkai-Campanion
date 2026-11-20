@@ -9,16 +9,16 @@
   const link = (u, t) => (safeUrl(u) ? `<a href="${safeUrl(u)}" target="_blank" rel="noopener noreferrer">${esc(t)}</a>` : "");
 
   /* ---- État + localStorage ---- */
-  let state = { checks: {}, lastSeenLog: "" };
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s.checks === "object") state = { checks: s.checks, lastSeenLog: s.lastSeenLog || "" }; } catch (e) {}
+  let state = { checks: {}, lastSeenLog: "", periods: {} };
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s.checks === "object") state = { checks: s.checks, lastSeenLog: s.lastSeenLog || "", periods: s.periods || {} }; } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
   /* ---- Onglets ---- */
   const TABS = [
-    { id: "accueil", nom: "Accueil", subs: [] },
+    { id: "accueil", nom: "Actualités", subs: [] },
     { id: "builds", nom: "Personnages", groupe: "Guides", subs: [["main", "Personnages"], ["astuces", "Astuces de base"]] },
     { id: "tutos", nom: "Tutos", groupe: "Guides", subs: [] },
-    { id: "taches", nom: "Tâches & Checklists", groupe: "Progression", subs: [["main", "Récurrentes"], ["maj", "MAJ actuelle"], ["old", "Précédentes MAJ"]] },
+    { id: "taches", nom: "Tâches & Checklists", groupe: "Progression", subs: [["main", "Récurrentes"], ["maj", "MAJ"]] },
     { id: "ressources", nom: "Ressources conseillées", groupe: "Liens", subs: [["main", "Sites conseillés"], ["yt", "Chaînes YouTube"]] },
   ];
   let cur = { tab: "accueil", sub: "main" };
@@ -41,8 +41,7 @@
 
   /* ---- Accueil : actualités uniquement ---- */
   function vAccueil() {
-    return `<h1>Accueil</h1>
-    <section class="section"><h2>Actualités</h2><div class="grid">${DATA_ACCUEIL.actus.map((a) => card(`<h3>${esc(a.titre)}</h3><p class="muted">${esc(a.date)}</p><p>${esc(a.texte)}</p>${link(a.lien, "Lire la suite")}`)).join("")}</div></section>`;
+    return `<h1>Actualités</h1><div class="grid">${DATA_ACCUEIL.actus.map((a) => card(`<h3>${esc(a.titre)}</h3><p class="muted">${esc(a.date)}</p><p>${esc(a.texte)}</p>${link(a.lien, "Lire la suite")}`)).join("")}</div>`;
   }
 
   /* ---- Personnages : filtres Voies/Types, bulles cliquables, carte détaillée ---- */
@@ -52,12 +51,12 @@
 
   function vBuilds(sub) {
     if (sub === "astuces") return `<div class="grid">${DATA_BUILDS.astuces.map((a) => card(`<h3>${esc(a.titre)}</h3><p>${esc(a.texte)}</p>`)).join("")}</div>`;
-    return `<div id="perso-zone"><div class="toolbar"><input type="search" id="q" placeholder="Rechercher un personnage" aria-label="Rechercher" value="${esc(pf.q)}"><button class="btn" id="ftoggle" aria-expanded="${pf.open}">Voies &amp; Types ▾</button><button class="btn ghost" data-freset>Réinitialiser</button></div><div id="fpanel" class="fpanel"></div><div id="bubbles" class="bubbles"></div><div id="pcard"></div></div>`;
+    return `<div id="perso-zone"><div class="toolbar"><input type="search" id="q" placeholder="Rechercher un personnage" aria-label="Rechercher" value="${esc(pf.q)}"><button class="btn" id="ftoggle" aria-expanded="${pf.open}">Voies &amp; Types ▾</button><button class="btn ghost" data-freset>Réinitialiser</button></div><div id="fpanel" class="fpanel"></div><div id="bubbles" class="bubbles"></div></div>`;
   }
   function cardHtml(p) {
     const sets = (p.sets || []).slice(0, 2).map((u) => (safeUrl(u) ? `<img class="set-icon" src="${safeUrl(u)}" alt="Set de reliques" loading="lazy" data-hide referrerpolicy="no-referrer">` : "")).join("");
     const vids = (p.videos || []).slice(0, 3).map((u, i) => link(u, "▶ Vidéo " + (i + 1))).filter(Boolean).join("");
-    return `<article class="card pcard fade"><button class="btn ghost close-card" data-close aria-label="Fermer la carte">✕</button><h3>Sets de reliques</h3><div class="sets">${sets || '<span class="muted">À renseigner.</span>'}</div><h3>Notes</h3><p class="notes">${esc(p.notes)}</p><h3>Guide Vidéo</h3><div class="row">${vids || '<span class="muted">Aucun lien pour le moment.</span>'}</div></article>`;
+    return `<h3>Sets de reliques</h3><div class="sets">${sets || '<span class="muted">À renseigner.</span>'}</div><h3>Notes</h3><p class="notes">${esc(p.notes)}</p><h3>Guide Vidéo</h3><div class="row">${vids || '<span class="muted">Aucun lien pour le moment.</span>'}</div>`;
   }
   function paintPersos() {
     $("#fpanel").innerHTML = filtersHtml();
@@ -65,22 +64,18 @@
     $("#ftoggle").setAttribute("aria-expanded", String(pf.open));
     const q = pf.q.toLowerCase();
     const list = DATA_BUILDS.persos.filter((p) => p.nom.toLowerCase().includes(q) && (!pf.voie || p.voie === pf.voie) && (!pf.type || p.type === pf.type));
-    $("#bubbles").innerHTML = list.map((p) => `<button class="bubble ${pf.sel === p.id ? "on" : ""}" data-p="${esc(p.id)}" title="${esc(p.nom)}" aria-label="${esc(p.nom)}">${safeUrl(p.icone) ? `<img src="${safeUrl(p.icone)}" alt="" loading="lazy" data-hide referrerpolicy="no-referrer">` : `<i class="bub-ph">${esc((p.nom || "?")[0])}</i>`}<span>${esc(p.nom)}</span></button>`).join("") || '<p class="muted">Aucun personnage. Modifiez la recherche ou les filtres.</p>';
-    const sel = DATA_BUILDS.persos.find((p) => p.id === pf.sel);
-    $("#pcard").innerHTML = sel ? cardHtml(sel) : "";
+    $("#bubbles").innerHTML = list.map((p) => `<button class="bubble" data-p="${esc(p.id)}" title="${esc(p.nom)}" aria-label="${esc(p.nom)}">${safeUrl(p.icone) ? `<img src="${safeUrl(p.icone)}" alt="" loading="lazy" data-hide referrerpolicy="no-referrer">` : `<i class="bub-ph">${esc((p.nom || "?")[0])}</i>`}<span>${esc(p.nom)}</span></button>`).join("") || '<p class="muted">Aucun personnage. Modifiez la recherche ou les filtres.</p>';
   }
   function initPersos() {
     paintPersos();
     $("#q").oninput = (e) => { pf.q = e.target.value; paintPersos(); };
     $("#perso-zone").onclick = (e) => {
-      const t = e.target.closest("[data-p],[data-f],[data-freset],[data-close],#ftoggle"); if (!t) return;
-      if (t.dataset.p) pf.sel = pf.sel === t.dataset.p ? "" : t.dataset.p; // 2e clic = masquer la carte
-      else if (t.dataset.f) pf[t.dataset.f] = pf[t.dataset.f] === t.dataset.v ? "" : t.dataset.v;
+      const t = e.target.closest("[data-p],[data-f],[data-freset],#ftoggle"); if (!t) return;
+      if (t.dataset.p) { const p = DATA_BUILDS.persos.find((x) => x.id === t.dataset.p); if (p) openDialog("Fiche personnage", cardHtml(p)); return; } // fenêtre, comme les guides
+      if (t.dataset.f) pf[t.dataset.f] = pf[t.dataset.f] === t.dataset.v ? "" : t.dataset.v;
       else if (t.hasAttribute("data-freset")) { pf.q = ""; pf.voie = ""; pf.type = ""; $("#q").value = ""; }
-      else if (t.hasAttribute("data-close")) pf.sel = "";
       else if (t.id === "ftoggle") pf.open = !pf.open;
       paintPersos();
-      if (t.dataset.p && pf.sel) $("#pcard").scrollIntoView({ behavior: "smooth", block: "nearest" });
     };
   }
 
@@ -91,18 +86,68 @@
   }
 
   const IMG_DIR = "assets/taches/"; // dossier des images de guides (ITA1.jpg ... ITA17.jpg)
-  const checkItem = (it) => `<div class="task ${it.badge ? "alt" : ""}"><label class="check ${state.checks[it.id] ? "done" : ""}"><input type="checkbox" data-id="${esc(it.id)}" ${state.checks[it.id] ? "checked" : ""}><span><span class="lbl">${esc(it.label)}</span>${it.badge ? `<span class="badge b-rarete">${esc(it.badge)}</span>` : ""}${it.tip ? `<span class="tip">${esc(it.tip)}</span>` : ""}${it.video ? `<span class="tip">${link(it.video, "▶ Vidéo")}</span>` : ""}</span></label>${it.guide ? `<button class="btn guide-btn" data-guide="${esc(it.id)}">Guide</button>` : ""}</div>`;
+  const checkItem = (it) => `<div class="task ${it.badge ? "alt" : ""}"><label class="check ${state.checks[it.id] ? "done" : ""}"><input type="checkbox" data-id="${esc(it.id)}" ${state.checks[it.id] ? "checked" : ""}><span><span class="lbl">${esc(it.label)}</span>${it.badge ? `<span class="badge b-rarete">${esc(it.badge)}</span>` : ""}${it.cycle ? `<span class="tip cd" data-cd="${it.cycle}">${cdText(it.cycle)}</span>` : ""}${it.tip ? `<span class="tip">${esc(it.tip)}</span>` : ""}${it.video ? `<span class="tip">${link(it.video, "▶ Vidéo")}</span>` : ""}</span></label>${it.guide ? `<button class="btn guide-btn" data-guide="${esc(it.id)}">Guide</button>` : ""}</div>`;
   const progress = (items) => { const n = items.filter((i) => state.checks[i.id]).length; return `<p class="muted" data-prog>${n} / ${items.length} terminées</p><div class="progress"><i style="width:${items.length ? (n / items.length) * 100 : 0}%"></i></div>`; };
 
   const FREQ = [["quotidienne", "Quotidiennes"], ["hebdo", "Hebdomadaires / Bi-hebdomadaires"], ["mensuelle", "Mensuelles / MÀJ (~43 j)"]];
   function vTaches(sub) {
-    const T = DATA_TACHES;
-    if (sub === "maj") return `<h2>Mise à jour ${esc(T.majActuelle.version)}</h2>${progress(T.majActuelle.items)}${T.majActuelle.items.map(checkItem).join("")}`;
-    if (sub === "old") return T.majPrecedentes.map((m) => `<h2>Mise à jour ${esc(m.version)}</h2>${m.items.map(checkItem).join("")}`).join("");
+    if (sub === "maj") return vMaj();
     return FREQ.map(([f, nom]) => {
-      const items = T.recurrentes.filter((i) => i.freq === f);
-      return `<section class="section"><div class="row" style="justify-content:space-between;align-items:center"><h2>${nom}</h2><button class="btn ghost" data-reset="${f}">Réinitialiser</button></div>${progress(items)}${items.map(checkItem).join("")}</section>`;
+      const items = DATA_TACHES.recurrentes.filter((i) => i.freq === f);
+      return `<section class="section"><div class="row" style="justify-content:space-between;align-items:center"><h2>${nom} <span class="muted cd" data-cd="${f}">${cdText(f)}</span></h2><button class="btn ghost" data-reset="${f}">Réinitialiser</button></div>${progress(items)}${items.map(checkItem).join("")}</section>`;
     }).join("");
+  }
+
+  /* ---- MAJ : un post par version, avec cases à cocher intégrées ---- */
+  const blocHtml = (b) => {
+    if (b[0] === "h") return `<h3>${esc(b[1])}</h3>`;
+    if (b[0] === "p") return `<p>${esc(b[1])}</p>`;
+    if (b[0] === "ul") return `<ul>${b[1].map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+    if (b[0] === "check") return checkItem({ id: b[1], label: b[2], tip: b[3] || "" });
+    if (b[0] === "video") return `<p>${link(b[1], "▶ " + (b[2] || "Vidéo"))}</p>`;
+    if (b[0] === "img") return `<figure><img src="${esc(b[1])}" alt="${esc(b[2] || "")}" loading="lazy" data-ph data-name="${esc(b[1])}">${b[2] ? `<figcaption>${esc(b[2])}</figcaption>` : ""}</figure>`;
+    return "";
+  };
+  function vMaj() {
+    const posts = DATA_TACHES.maj || [];
+    if (!posts.length) return '<p class="muted">Aucune mise à jour pour le moment.</p>';
+    return posts.map((p, i) => {
+      const ids = p.blocs.filter((b) => b[0] === "check").map((b) => b[1]);
+      const n = ids.filter((id) => state.checks[id]).length;
+      return `<details class="post card" ${i === 0 ? "open" : ""}><summary><strong>Version ${esc(p.version)}</strong><span class="muted">${esc(p.date || "")}</span>${ids.length ? `<span class="badge b-tier post-count">${n}/${ids.length}</span>` : ""}</summary><div class="post-body">${p.blocs.map(blocHtml).join("")}</div></details>`;
+    }).join("");
+  }
+
+  /* ---- Réinitialisation automatique (heure du serveur de jeu) ---- */
+  const DAY = 864e5, HOUR = 36e5, CYCLES = ["quotidienne", "hebdo", "bihebdo", "mensuelle", "maj"];
+  const cycleOf = (t) => t.cycle || t.freq;
+  // Renvoie { id: numéro de la période en cours, next: instant (ms) du prochain reset } ou null si non configuré
+  function periodInfo(cycle, now = Date.now()) {
+    const c = DATA_TACHES.reset || {}, shift = (c.decalageUTC ?? 1) * HOUR - (c.heure ?? 4) * HOUR;
+    const t = now + shift, d = Math.floor(t / DAY); // « jour de jeu » : change à l'heure de reset
+    let id, nextShifted;
+    if (cycle === "quotidienne") { id = d; nextShifted = (d + 1) * DAY; }
+    else if (cycle === "hebdo") { const back = (((d + 4) % 7) - (c.hebdoJour ?? 1) + 7) % 7; id = d - back; nextShifted = (id + 7) * DAY; }
+    else if (cycle === "mensuelle") { const x = new Date(t); id = x.getUTCFullYear() * 12 + x.getUTCMonth(); nextShifted = Date.UTC(x.getUTCFullYear(), x.getUTCMonth() + 1, 1); }
+    else { const a = c[cycle]; if (!a || !a.ancre || !a.jours) return null; const ad = Math.floor(Date.parse(a.ancre + "T00:00:00Z") / DAY); id = Math.floor((d - ad) / a.jours); nextShifted = (ad + (id + 1) * a.jours) * DAY; }
+    return { id, next: nextShifted - shift };
+  }
+  // Décoche les tâches d'un cycle dès que sa période a changé (rien n'est créé automatiquement)
+  function applyResets() {
+    let changed = false;
+    CYCLES.forEach((cy) => {
+      const p = periodInfo(cy); if (!p) return;
+      if (state.periods[cy] === undefined) { state.periods[cy] = p.id; changed = true; return; } // 1er lancement : on mémorise sans rien effacer
+      if (state.periods[cy] !== p.id) { DATA_TACHES.recurrentes.filter((t) => cycleOf(t) === cy).forEach((t) => delete state.checks[t.id]); state.periods[cy] = p.id; changed = true; }
+    });
+    if (changed) save();
+    return changed;
+  }
+  const fmt = (ms) => { const m = Math.max(0, Math.ceil(ms / 6e4)), j = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mi = m % 60; return j ? `${j} j ${h} h` : h ? `${h} h ${String(mi).padStart(2, "0")}` : `${mi} min`; };
+  const cdText = (cy) => { const p = periodInfo(cy); return p ? "· reset dans " + fmt(p.next - Date.now()) : ""; };
+  function tick() {
+    if (applyResets() && cur.tab === "taches" && cur.sub === "main") render_progressOnly();
+    document.querySelectorAll("[data-cd]").forEach((el) => { el.textContent = cdText(el.dataset.cd); });
   }
 
   /* ---- Fenêtre « Guide » (créée à la demande, n'alourdit pas la liste) ---- */
@@ -116,9 +161,7 @@
     }).join("");
   }
   let gdlg;
-  function openGuide(id) {
-    const t = DATA_TACHES.recurrentes.find((x) => x.id === id);
-    if (!t || !t.guide) return;
+  function openDialog(titre, html) {
     if (!gdlg) {
       gdlg = document.createElement("dialog");
       gdlg.className = "guide";
@@ -127,8 +170,12 @@
       // Fermeture : bouton ✕ ou clic sur le fond
       gdlg.addEventListener("click", (e) => { if (e.target === gdlg || e.target.closest("[data-close-guide]")) gdlg.close(); });
     }
-    gdlg.innerHTML = `<div class="guide-head"><h2 id="guide-title">${esc(t.label)}</h2><button class="btn" data-close-guide aria-label="Fermer">✕</button></div><div class="guide-body">${guideHtml(t.guide)}</div>`;
+    gdlg.innerHTML = `<div class="guide-head"><h2 id="guide-title">${esc(titre)}</h2><button class="btn" data-close-guide aria-label="Fermer">✕</button></div><div class="guide-body">${html}</div>`;
     gdlg.showModal();
+  }
+  function openGuide(id) {
+    const t = DATA_TACHES.recurrentes.find((x) => x.id === id);
+    if (t && t.guide) openDialog(t.label, guideHtml(t.guide));
   }
 
   function vRessources(sub) {
@@ -154,6 +201,7 @@
   // Images : avatar masqué si cassé ; image de guide → essai .webp puis emplacement indicatif
   document.addEventListener("error", (e) => {
     const im = e.target; if (!im || !im.classList) return;
+    if (im.hasAttribute("data-ph")) { const d = document.createElement("div"); d.className = "img-ph"; d.textContent = "Image à ajouter : " + im.dataset.name; im.replaceWith(d); return; }
     if (im.classList.contains("avatar") || im.hasAttribute("data-hide")) { im.style.visibility = "hidden"; return; }
     if (im.tagName === "IMG" && im.dataset.ext === "jpg") { im.dataset.ext = "webp"; im.src = IMG_DIR + im.dataset.name + ".webp"; }
     else if (im.tagName === "IMG" && im.dataset.ext === "webp") {
@@ -194,7 +242,9 @@
     const id = e.target.dataset && e.target.dataset.id; if (!id) return;
     if (e.target.checked) state.checks[id] = true; else delete state.checks[id];
     save(); const lab = e.target.closest(".check"); lab.classList.toggle("done", e.target.checked);
-    render_progressOnly();
+    const post = e.target.closest(".post");
+    if (post) { const b = post.querySelector(".post-count"); if (b) b.textContent = post.querySelectorAll("input[data-id]:checked").length + "/" + post.querySelectorAll("input[data-id]").length; }
+    else render_progressOnly();
   });
   function render_progressOnly() { const y = window.scrollY; render(); window.scrollTo(0, y); }
 
@@ -219,5 +269,8 @@
     } catch (e) { msg("Code invalide : collez le texte exporté depuis ce site, sans le modifier.", true); }
   };
 
+  applyResets();
   render();
+  setInterval(tick, 30000);
+  document.addEventListener("visibilitychange", tick);
 })();
