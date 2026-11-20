@@ -10,31 +10,11 @@ html{background:var(--bg);overflow-x:hidden}
 body{margin:0;overflow-x:hidden;background:transparent;color:var(--text);font:16px/1.55 "Segoe UI",system-ui,sans-serif}
 
 /* ===== Fond d'écran (PC par défaut) ===== */
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:-2;
-  background:url("assets/wallpapers/wallpaperHC1-1920.jpg") center/cover no-repeat;
-}
-
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:url("assets/wallpapers/wallpaperHC1-1920.jpg") center/cover no-repeat}
 /* Voile sombre par-dessus l'image (0.72 = assombrissement ; augmentez pour plus sombre) */
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  z-index:-1;
-  background:rgba(8,7,12,.72);
-  pointer-events:none;
-}
-
-/* Tablette et mobile : version allégée, cadrage décalé vers la droite */
-@media (max-width:959px){
-  body::before{
-    background-image:url("assets/wallpapers/wallpaperHC1-1280.jpg");
-    background-position:60% center;
-  }
-}
+body::after{content:"";position:fixed;inset:0;z-index:-1;background:rgba(8,7,12,.72);pointer-events:none}
+/* Tablette et mobile : version allégée, cadrage décalé */
+@media (max-width:959px){body::before{background-image:url("assets/wallpapers/wallpaperHC1-1280.jpg");background-position:60% center}}
 h1,h2,h3{line-height:1.25;margin:0 0 .5em}
 h1{font-size:1.6rem} h2{font-size:1.2rem} h3{font-size:1.05rem}
 a{color:var(--accent)} p{margin:.3em 0}
@@ -103,3 +83,32 @@ dialog textarea{width:100%}
 .chan h3{margin:0}
 .avatar{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none;border:1px solid var(--line);background:var(--panel-2)}
 .b-leaks{color:var(--gold);border-color:rgba(240,185,74,.4)}
+
+/* ===== Tâches : bouton Guide et fenêtre explicative ===== */
+.task{display:flex;gap:8px;margin-bottom:8px}
+.task .check{flex:1;margin-bottom:0;min-width:0}
+.task.alt .check{border-left:3px solid var(--gold)}
+.check .badge{margin-left:6px;vertical-align:middle}
+.guide-btn{flex:none;align-self:center;padding:6px 14px}
+
+/* Fenêtre : un peu plus large sur PC/tablette, défilement interne */
+dialog.guide{padding:0;width:min(860px,92vw);max-height:88vh;overflow:hidden}
+dialog.guide[open]{display:flex;flex-direction:column}
+.guide-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.guide-head h2{margin:0}
+.guide-body{padding:16px 18px 22px;overflow-y:auto;overflow-x:hidden;min-height:0}
+.guide-body ul{padding-left:20px}
+
+/* Images : jamais rognées (2560×1600, ratio conservé), légende juste en dessous */
+.guide-body figure{margin:0 0 20px;text-align:center}
+.guide-body img{display:block;margin:0 auto;width:auto;max-width:100%;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;border:1px solid var(--line)}
+.guide-body figcaption{margin-top:8px;color:var(--muted);font-size:.9rem;text-align:left}
+.img-ph{border:1px dashed var(--line);border-radius:8px;padding:22px 12px;text-align:center;color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
+
+/* Mobile */
+@media(max-width:600px){
+  dialog.guide{width:94vw}
+  .guide-body{padding:14px 12px 20px}
+  .guide-body img{width:100%;max-height:55vh}
+}
+@media(max-width:520px){.task{flex-direction:column}.guide-btn{align-self:flex-start}}
