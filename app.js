@@ -267,4 +267,27 @@
 
   function copy(text, btn) {
     const ok = () => { const o = btn.textContent; btn.textContent = "Copié ✓"; btn.classList.add("copied"); setTimeout(() => { btn.textContent = o; btn.classList.remove("copied"); }, 1400); };
-  
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(ok, () => fallback());
+    else fallback();
+    function fallback() { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); ok(); } catch (e) {} ta.remove(); }
+  }
+
+  /* ---- Export / Import ---- */
+  const dlg = $("#dlg-save"), msg = (t, bad) => { const m = $("#save-msg"); m.textContent = t; m.style.color = bad ? "var(--bad)" : "var(--ok)"; };
+  if ($("#btn-save")) $("#btn-save").onclick = () => { $("#save-text").value = ""; msg(""); dlg.showModal(); };
+  $("#btn-close").onclick = () => dlg.close();
+  $("#btn-export").onclick = () => { $("#save-text").value = JSON.stringify({ app: "honkai-companion", v: 1, checks: state.checks, star: state.star }); $("#save-text").select(); msg("Code généré. Copiez-le pour le coller sur un autre appareil."); };
+  $("#btn-import").onclick = () => {
+    try {
+      const d = JSON.parse($("#save-text").value);
+      if (d.app !== "honkai-companion" || !d.checks || typeof d.checks !== "object" || Array.isArray(d.checks)) throw new Error();
+      const clean = {}; Object.keys(d.checks).forEach((k) => { if (d.checks[k] === true) clean[k] = true; });
+      state.checks = clean; if (typeof d.star === "string") state.star = d.star; save(); render(); msg("Sauvegarde importée avec succès.");
+    } catch (e) { msg("Code invalide : collez le texte exporté depuis ce site, sans le modifier.", true); }
+  };
+
+  try { applyResets(); } catch (e) {}
+  render();
+  setInterval(() => { try { tick(); } catch (e) {} }, 30000);
+  document.addEventListener("visibilitychange", tick);
+})();
