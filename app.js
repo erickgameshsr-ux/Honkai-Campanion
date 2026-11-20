@@ -9,8 +9,8 @@
   const link = (u, t) => (safeUrl(u) ? `<a href="${safeUrl(u)}" target="_blank" rel="noopener noreferrer">${esc(t)}</a>` : "");
 
   /* ---- État + localStorage ---- */
-  let state = { checks: {}, lastSeenLog: "", periods: {} };
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s.checks === "object") state = { checks: s.checks, lastSeenLog: s.lastSeenLog || "", periods: s.periods || {} }; } catch (e) {}
+  let state = { checks: {}, lastSeenLog: "", periods: {}, star: "" };
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s.checks === "object") state = { checks: s.checks, lastSeenLog: s.lastSeenLog || "", periods: s.periods || {}, star: typeof s.star === "string" ? s.star : "" }; } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
   /* ---- Onglets ---- */
@@ -53,10 +53,20 @@
     if (sub === "astuces") return `<div class="grid">${DATA_BUILDS.astuces.map((a) => card(`<h3>${esc(a.titre)}</h3><p>${esc(a.texte)}</p>`)).join("")}</div>`;
     return `<div id="perso-zone"><div class="toolbar"><input type="search" id="q" placeholder="Rechercher un personnage" aria-label="Rechercher" value="${esc(pf.q)}"><button class="btn" id="ftoggle" aria-expanded="${pf.open}">Voies &amp; Types ▾</button><button class="btn ghost" data-freset>Réinitialiser</button></div><div id="fpanel" class="fpanel"></div><div id="bubbles" class="bubbles"></div></div>`;
   }
+  const bubbleHtml = (p) => `<button class="bubble" data-p="${esc(p.id)}" title="${esc(p.nom)}" aria-label="${esc(p.nom)}">${state.star === p.id ? '<b class="star-mark">★</b>' : ""}${safeUrl(p.icone) ? `<img src="${safeUrl(p.icone)}" alt="" loading="lazy" data-hide referrerpolicy="no-referrer">` : `<i class="bub-ph">${esc((p.nom || "?")[0])}</i>`}<span>${esc(p.nom)}</span></button>`;
+  const openPerso = (id) => { const p = DATA_BUILDS.persos.find((x) => x.id === id); if (p) openDialog("Fiche personnage", cardHtml(p)); };
+  // Met à jour les vues qui affichent l'objectif ★
+  function refreshStar() {
+    if (cur.tab === "builds" && cur.sub === "main") paintPersos();
+    else if (cur.tab === "taches" && cur.sub === "main") render_progressOnly();
+  }
+  // Bulle de l'objectif ★, affichée sous « Entraînement Quotidien » (rien si aucun objectif)
+  const starBlock = () => { const p = DATA_BUILDS.persos.find((x) => x.id === state.star); return p ? `<div class="star-goal"><span class="muted">★ Objectif d'amélioration</span>${bubbleHtml(p)}</div>` : ""; };
   function cardHtml(p) {
+    const on = state.star === p.id;
     const sets = (p.sets || []).slice(0, 2).map((u) => (safeUrl(u) ? `<img class="set-icon" src="${safeUrl(u)}" alt="Set de reliques" loading="lazy" data-hide referrerpolicy="no-referrer">` : "")).join("");
     const vids = (p.videos || []).slice(0, 3).map((u, i) => link(u, "▶ Vidéo " + (i + 1))).filter(Boolean).join("");
-    return `<h3>Sets de reliques</h3><div class="sets">${sets || '<span class="muted">À renseigner.</span>'}</div><h3>Notes</h3><p class="notes">${esc(p.notes)}</p><h3>Guide Vidéo</h3><div class="row">${vids || '<span class="muted">Aucun lien pour le moment.</span>'}</div>`;
+    return `<button class="btn star-btn ${on ? "on" : ""}" data-star="${esc(p.id)}" aria-pressed="${on}">★ Objectif d'amélioration</button><h3>Sets de reliques</h3><div class="sets">${sets || '<span class="muted">À renseigner.</span>'}</div><h3>Notes</h3><p class="notes">${esc(p.notes)}</p><h3>Guide Vidéo</h3><div class="row">${vids || '<span class="muted">Aucun lien pour le moment.</span>'}</div>`;
   }
   function paintPersos() {
     $("#fpanel").innerHTML = filtersHtml();
@@ -64,14 +74,13 @@
     $("#ftoggle").setAttribute("aria-expanded", String(pf.open));
     const q = pf.q.toLowerCase();
     const list = DATA_BUILDS.persos.filter((p) => p.nom.toLowerCase().includes(q) && (!pf.voie || p.voie === pf.voie) && (!pf.type || p.type === pf.type));
-    $("#bubbles").innerHTML = list.map((p) => `<button class="bubble" data-p="${esc(p.id)}" title="${esc(p.nom)}" aria-label="${esc(p.nom)}">${safeUrl(p.icone) ? `<img src="${safeUrl(p.icone)}" alt="" loading="lazy" data-hide referrerpolicy="no-referrer">` : `<i class="bub-ph">${esc((p.nom || "?")[0])}</i>`}<span>${esc(p.nom)}</span></button>`).join("") || '<p class="muted">Aucun personnage. Modifiez la recherche ou les filtres.</p>';
+    $("#bubbles").innerHTML = list.map(bubbleHtml).join("") || '<p class="muted">Aucun personnage. Modifiez la recherche ou les filtres.</p>';
   }
   function initPersos() {
     paintPersos();
     $("#q").oninput = (e) => { pf.q = e.target.value; paintPersos(); };
     $("#perso-zone").onclick = (e) => {
-      const t = e.target.closest("[data-p],[data-f],[data-freset],#ftoggle"); if (!t) return;
-      if (t.dataset.p) { const p = DATA_BUILDS.persos.find((x) => x.id === t.dataset.p); if (p) openDialog("Fiche personnage", cardHtml(p)); return; } // fenêtre, comme les guides
+      const t = e.target.closest("[data-f],[data-freset],#ftoggle"); if (!t) return;
       if (t.dataset.f) pf[t.dataset.f] = pf[t.dataset.f] === t.dataset.v ? "" : t.dataset.v;
       else if (t.hasAttribute("data-freset")) { pf.q = ""; pf.voie = ""; pf.type = ""; $("#q").value = ""; }
       else if (t.id === "ftoggle") pf.open = !pf.open;
@@ -89,12 +98,12 @@
   const checkItem = (it) => `<div class="task ${it.badge ? "alt" : ""}"><label class="check ${state.checks[it.id] ? "done" : ""}"><input type="checkbox" data-id="${esc(it.id)}" ${state.checks[it.id] ? "checked" : ""}><span><span class="lbl">${esc(it.label)}</span>${it.badge ? `<span class="badge b-rarete">${esc(it.badge)}</span>` : ""}${it.cycle ? `<span class="tip cd" data-cd="${it.cycle}">${cdText(it.cycle)}</span>` : ""}${it.tip ? `<span class="tip">${esc(it.tip)}</span>` : ""}${it.video ? `<span class="tip">${link(it.video, "▶ Vidéo")}</span>` : ""}</span></label>${it.guide ? `<button class="btn guide-btn" data-guide="${esc(it.id)}">Guide</button>` : ""}</div>`;
   const progress = (items) => { const n = items.filter((i) => state.checks[i.id]).length; return `<p class="muted" data-prog>${n} / ${items.length} terminées</p><div class="progress"><i style="width:${items.length ? (n / items.length) * 100 : 0}%"></i></div>`; };
 
-  const FREQ = [["quotidienne", "Quotidiennes"], ["hebdo", "Hebdomadaires / Bi-hebdomadaires"], ["mensuelle", "Mensuelles / MÀJ (~43 j)"]];
+  const FREQ = [["quotidienne", "Quotidiennes"], ["hebdo", "Hebdomadaires / Bi-hebdomadaires"], ["mensuelle", "Mensuelles / MÀJ"]];
   function vTaches(sub) {
     if (sub === "maj") return vMaj();
     return FREQ.map(([f, nom]) => {
       const items = DATA_TACHES.recurrentes.filter((i) => i.freq === f);
-      return `<section class="section"><div class="row" style="justify-content:space-between;align-items:center"><h2>${nom} <span class="muted cd" data-cd="${f}">${cdText(f)}</span></h2><button class="btn ghost" data-reset="${f}">Réinitialiser</button></div>${progress(items)}${items.map(checkItem).join("")}</section>`;
+      return `<section class="section"><div class="row" style="justify-content:space-between;align-items:center"><h2>${nom} <span class="muted cd" data-cd="${f}">${cdText(f)}</span></h2><button class="btn ghost" data-reset="${f}">Réinitialiser</button></div>${progress(items)}${items.map((it) => checkItem(it) + (it.id === "q-entrainement" ? starBlock() : "")).join("")}</section>`;
     }).join("");
   }
 
@@ -129,7 +138,7 @@
     if (cycle === "quotidienne") { id = d; nextShifted = (d + 1) * DAY; }
     else if (cycle === "hebdo") { const back = (((d + 4) % 7) - (c.hebdoJour ?? 1) + 7) % 7; id = d - back; nextShifted = (id + 7) * DAY; }
     else if (cycle === "mensuelle") { const x = new Date(t); id = x.getUTCFullYear() * 12 + x.getUTCMonth(); nextShifted = Date.UTC(x.getUTCFullYear(), x.getUTCMonth() + 1, 1); }
-    else { const a = c[cycle]; if (!a || !a.ancre || !a.jours) return null; const ad = Math.floor(Date.parse(a.ancre + "T00:00:00Z") / DAY); id = Math.floor((d - ad) / a.jours); nextShifted = (ad + (id + 1) * a.jours) * DAY; }
+    else { const a = c[cycle]; if (!a || !a.ancre || !a.jours) return null; const adv = (a.avanceHeures || 0) * HOUR, ad = Math.floor(Date.parse(a.ancre + "T00:00:00Z") / DAY), dd = Math.floor((t + adv) / DAY); id = Math.floor((dd - ad) / a.jours); nextShifted = (ad + (id + 1) * a.jours) * DAY - adv; } // avanceHeures : reset avancé
     return { id, next: nextShifted - shift };
   }
   // Décoche les tâches d'un cycle dès que sa période a changé (rien n'est créé automatiquement)
@@ -168,7 +177,12 @@
       gdlg.setAttribute("aria-labelledby", "guide-title");
       document.body.appendChild(gdlg);
       // Fermeture : bouton ✕ ou clic sur le fond
-      gdlg.addEventListener("click", (e) => { if (e.target === gdlg || e.target.closest("[data-close-guide]")) gdlg.close(); });
+      gdlg.addEventListener("click", (e) => {
+        if (e.target === gdlg || e.target.closest("[data-close-guide]")) return gdlg.close();
+        const st = e.target.closest("[data-star]"); if (!st) return;
+        state.star = state.star === st.dataset.star ? "" : st.dataset.star; // un seul objectif à la fois ; 2e clic = retirer
+        save(); const on = state.star === st.dataset.star; st.classList.toggle("on", on); st.setAttribute("aria-pressed", String(on)); refreshStar();
+      });
     }
     gdlg.innerHTML = `<div class="guide-head"><h2 id="guide-title">${esc(titre)}</h2><button class="btn" data-close-guide aria-label="Fermer">✕</button></div><div class="guide-body">${html}</div>`;
     gdlg.showModal();
@@ -185,7 +199,7 @@
       return `<p class="muted">${esc(R.youtubeNote)}</p>
       <div class="grid">${R.chainesYoutube.map((c) => card(
         `<div class="chan">
-          ${safeUrl(c.avatar) ? `<img class="avatar" src="${safeUrl(c.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}
+          ${c.avatar ? `<img class="avatar" src="${esc(c.avatar)}" alt="" loading="lazy">` : ""}
           <h3>${esc(c.nom)}</h3>
         </div>
         ${c.leaks ? badges(['<span class="badge b-leaks">Leaks</span>']) : ""}
@@ -202,7 +216,7 @@
   document.addEventListener("error", (e) => {
     const im = e.target; if (!im || !im.classList) return;
     if (im.hasAttribute("data-ph")) { const d = document.createElement("div"); d.className = "img-ph"; d.textContent = "Image à ajouter : " + im.dataset.name; im.replaceWith(d); return; }
-    if (im.classList.contains("avatar") || im.hasAttribute("data-hide")) { im.style.visibility = "hidden"; return; }
+    if (im.classList.contains("avatar") || im.hasAttribute("data-hide")) { im.style.display = "none"; return; }
     if (im.tagName === "IMG" && im.dataset.ext === "jpg") { im.dataset.ext = "webp"; im.src = IMG_DIR + im.dataset.name + ".webp"; }
     else if (im.tagName === "IMG" && im.dataset.ext === "webp") {
       const d = document.createElement("div"); d.className = "img-ph";
@@ -230,12 +244,13 @@
 
   /* ---- Événements délégués ---- */
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-tab],[data-sub],[data-copy],[data-reset],[data-guide]");
+    const t = e.target.closest("[data-tab],[data-sub],[data-copy],[data-reset],[data-guide],[data-p]");
     if (!t) return;
     if (t.dataset.tab) go(t.dataset.tab);
     else if (t.dataset.sub) go(cur.tab, t.dataset.sub);
     else if (t.dataset.copy) copy(t.dataset.copy, t);
     else if (t.dataset.guide) openGuide(t.dataset.guide);
+    else if (t.dataset.p) openPerso(t.dataset.p);
     else if (t.dataset.reset) { DATA_TACHES.recurrentes.filter((i) => i.freq === t.dataset.reset).forEach((i) => delete state.checks[i.id]); save(); render(); }
   });
   document.addEventListener("change", (e) => {
@@ -252,25 +267,4 @@
     const ok = () => { const o = btn.textContent; btn.textContent = "Copié ✓"; btn.classList.add("copied"); setTimeout(() => { btn.textContent = o; btn.classList.remove("copied"); }, 1400); };
     if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(ok, () => fallback());
     else fallback();
-    function fallback() { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); ok(); } catch (e) {} ta.remove(); }
-  }
-
-  /* ---- Export / Import ---- */
-  const dlg = $("#dlg-save"), msg = (t, bad) => { const m = $("#save-msg"); m.textContent = t; m.style.color = bad ? "var(--bad)" : "var(--ok)"; };
-  $("#btn-save").onclick = () => { $("#save-text").value = ""; msg(""); dlg.showModal(); };
-  $("#btn-close").onclick = () => dlg.close();
-  $("#btn-export").onclick = () => { $("#save-text").value = JSON.stringify({ app: "honkai-companion", v: 1, checks: state.checks }); $("#save-text").select(); msg("Code généré. Copiez-le pour le coller sur un autre appareil."); };
-  $("#btn-import").onclick = () => {
-    try {
-      const d = JSON.parse($("#save-text").value);
-      if (d.app !== "honkai-companion" || !d.checks || typeof d.checks !== "object" || Array.isArray(d.checks)) throw new Error();
-      const clean = {}; Object.keys(d.checks).forEach((k) => { if (d.checks[k] === true) clean[k] = true; });
-      state.checks = clean; save(); render(); msg("Sauvegarde importée avec succès.");
-    } catch (e) { msg("Code invalide : collez le texte exporté depuis ce site, sans le modifier.", true); }
-  };
-
-  applyResets();
-  render();
-  setInterval(tick, 30000);
-  document.addEventListener("visibilitychange", tick);
-})();
+    function fallback() { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); ok(); } catch (e) {} ta
