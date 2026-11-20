@@ -6,6 +6,17 @@
 <title>Honkai Companion</title>
 <link rel="icon" type="image/png" href="assets/ICON.png">
 <link rel="stylesheet" href="style.css">
+<script>
+/* Affiche les erreurs de chargement directement sur la page (utile sur mobile) */
+window.addEventListener("error", function (e) {
+  var t = e.target;
+  if (t !== window && !(t && t.tagName === "SCRIPT")) return;
+  var m = t === window ? (e.message || "Erreur") + (e.filename ? " (" + e.filename.split("/").pop() + ":" + e.lineno + ")" : "") : "Fichier introuvable : " + t.getAttribute("src");
+  var b = document.getElementById("err-banner");
+  if (!b) { b = document.createElement("div"); b.id = "err-banner"; b.style.cssText = "position:fixed;left:0;right:0;bottom:0;z-index:99;background:#5a1620;color:#fff;font:13px/1.4 monospace;padding:10px 14px;white-space:pre-wrap"; (document.body || document.documentElement).appendChild(b); }
+  b.textContent += m + "\n";
+}, true);
+</script>
 </head>
 <body>
 <header class="topbar">
