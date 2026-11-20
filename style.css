@@ -151,3 +151,12 @@ dialog.guide[open]{display:flex;flex-direction:column}
 .post-body figure{margin:12px 0}
 .post-body img{display:block;margin:0 auto;max-width:100%;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;border:1px solid var(--line)}
 .post-body figcaption{color:var(--muted);font-size:.9rem;margin-top:6px}
+
+/* ===== Objectif d'amélioration ★ ===== */
+.bubble{position:relative}
+.star-mark{position:absolute;top:2px;right:6px;z-index:1;color:var(--gold);font-size:1rem;text-shadow:0 0 4px #000}
+.star-btn{margin-bottom:6px}
+.star-btn.on{border-color:var(--gold);color:var(--gold)}
+.star-goal{display:flex;align-items:center;gap:12px;margin:-2px 0 10px 12px;padding:6px 12px;border-left:3px solid var(--gold);background:var(--panel);border-radius:8px}
+.star-goal .bubble{padding:0;flex-direction:row;gap:8px;font-size:.9rem}
+.star-goal .bubble img,.star-goal .bubble .bub-ph{width:44px;height:44px}
