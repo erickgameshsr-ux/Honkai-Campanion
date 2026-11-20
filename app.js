@@ -16,13 +16,13 @@
   /* ---- Onglets ---- */
   const TABS = [
     { id: "accueil", nom: "Accueil", subs: [] },
-    { id: "builds", nom: "Builds & Personnages", groupe: "Guides", subs: [["main", "Builds optimisés"], ["astuces", "Astuces de base"]] },
+    { id: "builds", nom: "Personnages", groupe: "Guides", subs: [["main", "Personnages"], ["astuces", "Astuces de base"]] },
+    { id: "tutos", nom: "Tutos", groupe: "Guides", subs: [] },
     { id: "taches", nom: "Tâches & Checklists", groupe: "Progression", subs: [["main", "Récurrentes"], ["maj", "MAJ actuelle"], ["old", "Précédentes MAJ"]] },
     { id: "ressources", nom: "Ressources conseillées", groupe: "Liens", subs: [["main", "Sites conseillés"], ["yt", "Chaînes YouTube"]] },
-    { id: "veille", nom: "Bêta & Futures infos", groupe: "Veille", subs: [["main", "Infos de la bêta"], ["futur", "Moyen-long terme"]] }
   ];
   let cur = { tab: "accueil", sub: "main" };
-  const latestLog = () => (DATA_ACCUEIL.log[0] || {}).id || "";
+  const latestLog = () => ((DATA_ACCUEIL.log || [])[0] || {}).id || "";
   const hasNew = () => latestLog() && state.lastSeenLog !== latestLog();
 
   function renderNav() {
@@ -39,28 +39,55 @@
   const card = (h) => `<article class="card">${h}</article>`;
   const badges = (arr) => `<div class="badges">${arr.filter(Boolean).join("")}</div>`;
 
+  /* ---- Accueil : actualités uniquement ---- */
   function vAccueil() {
-    const A = DATA_ACCUEIL;
     return `<h1>Accueil</h1>
-    <section class="section"><h2>Actualités</h2><div class="grid">${A.actus.map((a) => card(`<h3>${esc(a.titre)}</h3><p class="muted">${esc(a.date)}</p><p>${esc(a.texte)}</p>${link(a.lien, "Lire la suite")}`)).join("")}</div></section>
-    <section class="section"><h2>Événements en cours</h2><div class="grid">${A.events.map((e) => card(`<h3>${esc(e.titre)}</h3><p class="muted">Du ${esc(e.debut)} au ${esc(e.fin)}</p><p>${esc(e.infos)}</p>`)).join("")}</div></section>
-    <section class="section"><h2>Codes promotionnels</h2><div class="grid">${A.codes.map((c) => card(`<div class="code"><code>${esc(c.code)}</code><button class="btn" data-copy="${esc(c.code)}">Copier</button></div><p>${esc(c.recompense)}</p><p class="muted">Expire le ${esc(c.expire)}</p>`)).join("")}</div></section>
-    <section class="section"><h2>Nouveautés du site</h2>${A.log.map((l, i) => card(`<h3>${esc(l.titre)} ${i === 0 && hasNew() ? '<span class="badge b-new">Nouveau</span>' : ""}</h3><p class="muted">${esc(l.date)}</p><p>${esc(l.texte)}</p>`)).join("")}</section>`;
+    <section class="section"><h2>Actualités</h2><div class="grid">${DATA_ACCUEIL.actus.map((a) => card(`<h3>${esc(a.titre)}</h3><p class="muted">${esc(a.date)}</p><p>${esc(a.texte)}</p>${link(a.lien, "Lire la suite")}`)).join("")}</div></section>`;
   }
+
+  /* ---- Personnages : filtres Voies/Types, bulles cliquables, carte détaillée ---- */
+  let pf = { q: "", voie: "", type: "", open: false, sel: "" };
+  const chip = (kind, o) => `<button class="chip ${pf[kind] === o.id ? "on" : ""}" data-f="${kind}" data-v="${esc(o.id)}">${safeUrl(o.icone) ? `<img src="${safeUrl(o.icone)}" alt="" data-hide referrerpolicy="no-referrer">` : ""}${esc(o.id)}</button>`;
+  const filtersHtml = () => `<div class="frow"><b>Voies</b><div class="fscroll">${DATA_BUILDS.voies.map((o) => chip("voie", o)).join("")}</div></div><div class="frow"><b>Types</b><div class="fscroll">${DATA_BUILDS.types.map((o) => chip("type", o)).join("")}</div></div>`;
 
   function vBuilds(sub) {
     if (sub === "astuces") return `<div class="grid">${DATA_BUILDS.astuces.map((a) => card(`<h3>${esc(a.titre)}</h3><p>${esc(a.texte)}</p>`)).join("")}</div>`;
-    const roles = [...new Set(DATA_BUILDS.builds.map((b) => b.element))];
-    return `<div class="toolbar"><input type="search" id="q" placeholder="Rechercher un personnage" aria-label="Rechercher"><select id="f" aria-label="Filtrer par élément"><option value="">Tous les éléments</option>${roles.map((r) => `<option>${esc(r)}</option>`).join("")}</select></div><div class="grid" id="builds-list"></div>`;
+    return `<div id="perso-zone"><div class="toolbar"><input type="search" id="q" placeholder="Rechercher un personnage" aria-label="Rechercher" value="${esc(pf.q)}"><button class="btn" id="ftoggle" aria-expanded="${pf.open}">Voies &amp; Types ▾</button><button class="btn ghost" data-freset>Réinitialiser</button></div><div id="fpanel" class="fpanel"></div><div id="bubbles" class="bubbles"></div><div id="pcard"></div></div>`;
   }
-  function buildCards() {
-    const q = ($("#q").value || "").toLowerCase(), f = $("#f").value;
-    $("#builds-list").innerHTML = DATA_BUILDS.builds.filter((b) => b.nom.toLowerCase().includes(q) && (!f || b.element === f)).map((b) => card(
-      `<div class="banner" ${safeUrl(b.image) ? `style="background-image:url('${safeUrl(b.image)}')"` : ""}>${esc(b.role)}</div>
-      ${badges([`<span class="badge b-rarete">${esc(b.rarete)}</span>`, `<span class="badge b-element">${esc(b.element)}</span>`, `<span class="badge b-tier">Tier ${esc(b.tier)}</span>`])}
-      <h3>${esc(b.nom)}</h3><dl class="stats">${Object.entries(b.stats || {}).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>
-      <p><strong>Sets :</strong> ${esc(b.sets)}</p><p class="muted">${esc(b.notes)}</p>
-      <div class="row">${(b.videos || []).map((v) => link(v.url, "▶ " + v.titre)).join("")}</div>`)).join("") || '<p class="muted">Aucun résultat. Modifiez la recherche ou le filtre.</p>';
+  function cardHtml(p) {
+    const sets = (p.sets || []).slice(0, 2).map((u) => (safeUrl(u) ? `<img class="set-icon" src="${safeUrl(u)}" alt="Set de reliques" loading="lazy" data-hide referrerpolicy="no-referrer">` : "")).join("");
+    const vids = (p.videos || []).slice(0, 3).map((u, i) => link(u, "▶ Vidéo " + (i + 1))).filter(Boolean).join("");
+    return `<article class="card pcard fade"><button class="btn ghost close-card" data-close aria-label="Fermer la carte">✕</button><h3>Sets de reliques</h3><div class="sets">${sets || '<span class="muted">À renseigner.</span>'}</div><h3>Notes</h3><p class="notes">${esc(p.notes)}</p><h3>Guide Vidéo</h3><div class="row">${vids || '<span class="muted">Aucun lien pour le moment.</span>'}</div></article>`;
+  }
+  function paintPersos() {
+    $("#fpanel").innerHTML = filtersHtml();
+    $("#fpanel").hidden = !pf.open;
+    $("#ftoggle").setAttribute("aria-expanded", String(pf.open));
+    const q = pf.q.toLowerCase();
+    const list = DATA_BUILDS.persos.filter((p) => p.nom.toLowerCase().includes(q) && (!pf.voie || p.voie === pf.voie) && (!pf.type || p.type === pf.type));
+    $("#bubbles").innerHTML = list.map((p) => `<button class="bubble ${pf.sel === p.id ? "on" : ""}" data-p="${esc(p.id)}" title="${esc(p.nom)}" aria-label="${esc(p.nom)}">${safeUrl(p.icone) ? `<img src="${safeUrl(p.icone)}" alt="" loading="lazy" data-hide referrerpolicy="no-referrer">` : `<i class="bub-ph">${esc((p.nom || "?")[0])}</i>`}<span>${esc(p.nom)}</span></button>`).join("") || '<p class="muted">Aucun personnage. Modifiez la recherche ou les filtres.</p>';
+    const sel = DATA_BUILDS.persos.find((p) => p.id === pf.sel);
+    $("#pcard").innerHTML = sel ? cardHtml(sel) : "";
+  }
+  function initPersos() {
+    paintPersos();
+    $("#q").oninput = (e) => { pf.q = e.target.value; paintPersos(); };
+    $("#perso-zone").onclick = (e) => {
+      const t = e.target.closest("[data-p],[data-f],[data-freset],[data-close],#ftoggle"); if (!t) return;
+      if (t.dataset.p) pf.sel = pf.sel === t.dataset.p ? "" : t.dataset.p; // 2e clic = masquer la carte
+      else if (t.dataset.f) pf[t.dataset.f] = pf[t.dataset.f] === t.dataset.v ? "" : t.dataset.v;
+      else if (t.hasAttribute("data-freset")) { pf.q = ""; pf.voie = ""; pf.type = ""; $("#q").value = ""; }
+      else if (t.hasAttribute("data-close")) pf.sel = "";
+      else if (t.id === "ftoggle") pf.open = !pf.open;
+      paintPersos();
+      if (t.dataset.p && pf.sel) $("#pcard").scrollIntoView({ behavior: "smooth", block: "nearest" });
+    };
+  }
+
+  /* ---- Tutos ---- */
+  function vTutos() {
+    const t = DATA_BUILDS.tutos || [];
+    return t.length ? `<div class="grid">${t.map((x) => card(`<h3>${esc(x.titre)}</h3><p>${esc(x.resume)}</p>${(x.etapes || []).length ? `<ol>${x.etapes.map((e) => `<li>${esc(e)}</li>`).join("")}</ol>` : ""}${link(x.video, "▶ Vidéo")}`)).join("")}</div>` : '<p class="muted">Aucun tuto pour le moment.</p>';
   }
 
   const IMG_DIR = "assets/taches/"; // dossier des images de guides (ITA1.jpg ... ITA17.jpg)
@@ -127,7 +154,7 @@
   // Images : avatar masqué si cassé ; image de guide → essai .webp puis emplacement indicatif
   document.addEventListener("error", (e) => {
     const im = e.target; if (!im || !im.classList) return;
-    if (im.classList.contains("avatar")) { im.style.visibility = "hidden"; return; }
+    if (im.classList.contains("avatar") || im.hasAttribute("data-hide")) { im.style.visibility = "hidden"; return; }
     if (im.tagName === "IMG" && im.dataset.ext === "jpg") { im.dataset.ext = "webp"; im.src = IMG_DIR + im.dataset.name + ".webp"; }
     else if (im.tagName === "IMG" && im.dataset.ext === "webp") {
       const d = document.createElement("div"); d.className = "img-ph";
@@ -135,17 +162,12 @@
     }
   }, true);
 
-  function vVeille(sub) {
-    const list = sub === "futur" ? DATA_VEILLE.futur : DATA_VEILLE.beta;
-    return `<div class="grid">${list.map((x) => card(`${badges([`<span class="badge b-tier">${esc(x.statut)}</span>`])}<h3>${esc(x.titre)}</h3><p class="muted">${esc(x.date)}</p><p>${esc(x.texte)}</p>`)).join("")}</div>`;
-  }
-
   function render() {
     const tab = TABS.find((t) => t.id === cur.tab);
     const pills = tab.subs.length ? `<div class="pills" role="tablist">${tab.subs.map(([id, n]) => `<button class="pill" role="tab" data-sub="${id}" aria-selected="${cur.sub === id}">${esc(n)}</button>`).join("")}</div>` : "";
-    const body = { accueil: vAccueil, builds: vBuilds, taches: vTaches, ressources: vRessources, veille: vVeille }[cur.tab](cur.sub);
+    const body = { accueil: vAccueil, builds: vBuilds, taches: vTaches, tutos: vTutos, ressources: vRessources }[cur.tab](cur.sub);
     $("#view").innerHTML = `<div class="fade">${cur.tab === "accueil" ? "" : `<h1>${esc(tab.nom)}</h1>`}${pills}${body}</div>`;
-    if (cur.tab === "builds" && cur.sub === "main") { buildCards(); $("#q").oninput = buildCards; $("#f").onchange = buildCards; }
+    if (cur.tab === "builds" && cur.sub === "main") initPersos();
     if (cur.tab === "accueil") { state.lastSeenLog = latestLog(); save(); } // le badge disparaît au prochain affichage
     renderNav();
   }
