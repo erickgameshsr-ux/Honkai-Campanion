@@ -4,14 +4,25 @@
 .task.alt .check{border-left:3px solid var(--gold)}
 .check .badge{margin-left:6px;vertical-align:middle}
 .guide-btn{flex:none;align-self:center;padding:6px 14px}
-dialog.guide{padding:0;width:min(760px,96vw);max-height:90vh;overflow:hidden}
+
+/* Fenêtre : un peu plus large sur PC/tablette, défilement interne */
+dialog.guide{padding:0;width:min(860px,92vw);max-height:88vh;overflow:hidden}
 dialog.guide[open]{display:flex;flex-direction:column}
 .guide-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
 .guide-head h2{margin:0}
-.guide-body{padding:16px 18px 22px;overflow-y:auto}
+.guide-body{padding:16px 18px 22px;overflow-y:auto;overflow-x:hidden;min-height:0}
 .guide-body ul{padding-left:20px}
-.guide-body figure{margin:14px 0}
-.guide-body img{display:block;max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line)}
-.guide-body figcaption{color:var(--muted);font-size:.9rem;margin-top:6px}
+
+/* Images : jamais rognées (2560×1600, ratio conservé), légende juste en dessous */
+.guide-body figure{margin:0 0 20px;text-align:center}
+.guide-body img{display:block;margin:0 auto;width:auto;max-width:100%;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;border:1px solid var(--line)}
+.guide-body figcaption{margin-top:8px;color:var(--muted);font-size:.9rem;text-align:left}
 .img-ph{border:1px dashed var(--line);border-radius:8px;padding:22px 12px;text-align:center;color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
+
+/* Mobile */
+@media(max-width:600px){
+  dialog.guide{width:94vw}
+  .guide-body{padding:14px 12px 20px}
+  .guide-body img{width:100%;max-height:55vh}
+}
 @media(max-width:520px){.task{flex-direction:column}.guide-btn{align-self:flex-start}}
