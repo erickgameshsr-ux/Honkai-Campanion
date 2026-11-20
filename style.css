@@ -136,3 +136,18 @@ dialog.guide[open]{display:flex;flex-direction:column}
 .set-icon{width:72px;height:72px;object-fit:contain} /* icônes transparentes : aucun cadre, fond ni padding */
 .notes{white-space:pre-line}
 @media(max-width:520px){.frow{flex-direction:column;align-items:flex-start;gap:4px}.frow>b{width:auto}.fscroll{width:100%}}
+
+/* ===== Logo, compte à rebours, posts de version ===== */
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:32px;height:32px;border-radius:50%;object-fit:cover;flex:none}
+.cd{font-size:.8rem;font-weight:400;white-space:nowrap}
+.tip.cd{display:block}
+.post.card{padding:0;margin-bottom:14px}
+.post summary{cursor:pointer;padding:14px 16px;list-style:none;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.post summary::-webkit-details-marker{display:none}
+.post summary::before{content:"▸";color:var(--accent);transition:transform var(--t)}
+.post[open] summary::before{transform:rotate(90deg)}
+.post-body{padding:0 16px 16px}
+.post-body figure{margin:12px 0}
+.post-body img{display:block;margin:0 auto;max-width:100%;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;border:1px solid var(--line)}
+.post-body figcaption{color:var(--muted);font-size:.9rem;margin-top:6px}
