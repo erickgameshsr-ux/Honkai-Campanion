@@ -63,43 +63,78 @@
       <div class="row">${(b.videos || []).map((v) => link(v.url, "▶ " + v.titre)).join("")}</div>`)).join("") || '<p class="muted">Aucun résultat. Modifiez la recherche ou le filtre.</p>';
   }
 
-  const checkItem = (it) => `<label class="check ${state.checks[it.id] ? "done" : ""}"><input type="checkbox" data-id="${esc(it.id)}" ${state.checks[it.id] ? "checked" : ""}><span><span class="lbl">${esc(it.label)}</span>${it.tip ? `<span class="tip">${esc(it.tip)}</span>` : ""}${it.video ? `<span class="tip">${link(it.video, "▶ Vidéo")}</span>` : ""}</span></label>`;
+  const IMG_DIR = "assets/taches/"; // dossier des images de guides (ITA1.jpg ... ITA17.jpg)
+  const checkItem = (it) => `<div class="task ${it.badge ? "alt" : ""}"><label class="check ${state.checks[it.id] ? "done" : ""}"><input type="checkbox" data-id="${esc(it.id)}" ${state.checks[it.id] ? "checked" : ""}><span><span class="lbl">${esc(it.label)}</span>${it.badge ? `<span class="badge b-rarete">${esc(it.badge)}</span>` : ""}${it.tip ? `<span class="tip">${esc(it.tip)}</span>` : ""}${it.video ? `<span class="tip">${link(it.video, "▶ Vidéo")}</span>` : ""}</span></label>${it.guide ? `<button class="btn guide-btn" data-guide="${esc(it.id)}">Guide</button>` : ""}</div>`;
   const progress = (items) => { const n = items.filter((i) => state.checks[i.id]).length; return `<p class="muted" data-prog>${n} / ${items.length} terminées</p><div class="progress"><i style="width:${items.length ? (n / items.length) * 100 : 0}%"></i></div>`; };
 
+  const FREQ = [["quotidienne", "Quotidiennes"], ["hebdo", "Hebdomadaires / Bi-hebdomadaires"], ["mensuelle", "Mensuelles / MÀJ (~43 j)"]];
   function vTaches(sub) {
     const T = DATA_TACHES;
     if (sub === "maj") return `<h2>Mise à jour ${esc(T.majActuelle.version)}</h2>${progress(T.majActuelle.items)}${T.majActuelle.items.map(checkItem).join("")}`;
     if (sub === "old") return T.majPrecedentes.map((m) => `<h2>Mise à jour ${esc(m.version)}</h2>${m.items.map(checkItem).join("")}`).join("");
-    return [["quotidienne", "Quotidiennes"], ["hebdo", "Hebdomadaires"], ["mensuelle", "Mensuelles"]].map(([f, nom]) => {
+    return FREQ.map(([f, nom]) => {
       const items = T.recurrentes.filter((i) => i.freq === f);
       return `<section class="section"><div class="row" style="justify-content:space-between;align-items:center"><h2>${nom}</h2><button class="btn ghost" data-reset="${f}">Réinitialiser</button></div>${progress(items)}${items.map(checkItem).join("")}</section>`;
     }).join("");
   }
 
-function vRessources(sub) {
-  const R = RESSOURCES_DATA;
-  if (sub === "yt") {
-    return `<p class="muted">${esc(R.youtubeNote)}</p>
-    <div class="grid">${R.chainesYoutube.map((c) => card(
-      `<div class="chan">
-        <img class="avatar" src="${safeUrl(c.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer">
-        <h3>${esc(c.nom)}</h3>
-      </div>
-      ${c.leaks ? badges(['<span class="badge b-leaks">Leaks</span>']) : ""}
-      <p>${esc(c.description)}</p>
-      ${link(c.url, "Ouvrir la chaîne")}`)).join("")}</div>`;
+  /* ---- Fenêtre « Guide » (créée à la demande, n'alourdit pas la liste) ---- */
+  function guideHtml(blocs) {
+    return blocs.map((b) => {
+      if (b[0] === "h") return `<h3>${esc(b[1])}</h3>`;
+      if (b[0] === "p") return `<p>${esc(b[1])}</p>`;
+      if (b[0] === "ul") return `<ul>${b[1].map((x) => `<li>${esc(x)}</li>`).join("")}</ul>`;
+      if (b[0] === "img") return `<figure><img src="${IMG_DIR}${esc(b[1])}.jpg" data-name="${esc(b[1])}" data-ext="jpg" alt="${esc(b[2] || b[1])}" loading="lazy">${b[2] ? `<figcaption>${esc(b[2])}</figcaption>` : ""}</figure>`;
+      return "";
+    }).join("");
   }
-  return `<div class="grid">${R.sites.map((s) => card(
-    `${badges([`<span class="badge b-element">${esc(s.categorie)}</span>`])}
-    <h3>${esc(s.nom)}</h3><p>${esc(s.description)}</p>
-    ${link(s.url, "Ouvrir le site")}`)).join("")}</div>`;
-}
+  let gdlg;
+  function openGuide(id) {
+    const t = DATA_TACHES.recurrentes.find((x) => x.id === id);
+    if (!t || !t.guide) return;
+    if (!gdlg) {
+      gdlg = document.createElement("dialog");
+      gdlg.className = "guide";
+      gdlg.setAttribute("aria-labelledby", "guide-title");
+      document.body.appendChild(gdlg);
+      // Fermeture : bouton ✕ ou clic sur le fond
+      gdlg.addEventListener("click", (e) => { if (e.target === gdlg || e.target.closest("[data-close-guide]")) gdlg.close(); });
+    }
+    gdlg.innerHTML = `<div class="guide-head"><h2 id="guide-title">${esc(t.label)}</h2><button class="btn" data-close-guide aria-label="Fermer">✕</button></div><div class="guide-body">${guideHtml(t.guide)}</div>`;
+    gdlg.showModal();
+  }
 
-// Masque l'avatar s'il ne se charge pas (lien expiré, par exemple)
-document.addEventListener("error", (e) => {
-  if (e.target.classList && e.target.classList.contains("avatar")) e.target.style.visibility = "hidden";
-}, true);
-  
+  function vRessources(sub) {
+    if (typeof RESSOURCES_DATA === "undefined") return '<p class="muted">Les données des ressources sont introuvables. Vérifiez que data-ressources.js est bien présent et à jour.</p>';
+    const R = RESSOURCES_DATA;
+    if (sub === "yt") {
+      return `<p class="muted">${esc(R.youtubeNote)}</p>
+      <div class="grid">${R.chainesYoutube.map((c) => card(
+        `<div class="chan">
+          ${safeUrl(c.avatar) ? `<img class="avatar" src="${safeUrl(c.avatar)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : ""}
+          <h3>${esc(c.nom)}</h3>
+        </div>
+        ${c.leaks ? badges(['<span class="badge b-leaks">Leaks</span>']) : ""}
+        <p>${esc(c.description)}</p>
+        ${link(c.url, "Ouvrir la chaîne")}`)).join("")}</div>`;
+    }
+    return `<div class="grid">${R.sites.map((s) => card(
+      `${badges([`<span class="badge b-element">${esc(s.categorie)}</span>`])}
+      <h3>${esc(s.nom)}</h3><p>${esc(s.description)}</p>
+      ${link(s.url, "Ouvrir le site")}`)).join("")}</div>`;
+  }
+
+  // Images : avatar masqué si cassé ; image de guide → essai .webp puis emplacement indicatif
+  document.addEventListener("error", (e) => {
+    const im = e.target; if (!im || !im.classList) return;
+    if (im.classList.contains("avatar")) { im.style.visibility = "hidden"; return; }
+    if (im.tagName === "IMG" && im.dataset.ext === "jpg") { im.dataset.ext = "webp"; im.src = IMG_DIR + im.dataset.name + ".webp"; }
+    else if (im.tagName === "IMG" && im.dataset.ext === "webp") {
+      const d = document.createElement("div"); d.className = "img-ph";
+      d.textContent = "Image à ajouter : " + IMG_DIR + im.dataset.name + ".jpg (ou .webp)"; im.replaceWith(d);
+    }
+  }, true);
+
   function vVeille(sub) {
     const list = sub === "futur" ? DATA_VEILLE.futur : DATA_VEILLE.beta;
     return `<div class="grid">${list.map((x) => card(`${badges([`<span class="badge b-tier">${esc(x.statut)}</span>`])}<h3>${esc(x.titre)}</h3><p class="muted">${esc(x.date)}</p><p>${esc(x.texte)}</p>`)).join("")}</div>`;
@@ -125,11 +160,12 @@ document.addEventListener("error", (e) => {
 
   /* ---- Événements délégués ---- */
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-tab],[data-sub],[data-copy],[data-reset]");
+    const t = e.target.closest("[data-tab],[data-sub],[data-copy],[data-reset],[data-guide]");
     if (!t) return;
     if (t.dataset.tab) go(t.dataset.tab);
     else if (t.dataset.sub) go(cur.tab, t.dataset.sub);
     else if (t.dataset.copy) copy(t.dataset.copy, t);
+    else if (t.dataset.guide) openGuide(t.dataset.guide);
     else if (t.dataset.reset) { DATA_TACHES.recurrentes.filter((i) => i.freq === t.dataset.reset).forEach((i) => delete state.checks[i.id]); save(); render(); }
   });
   document.addEventListener("change", (e) => {
