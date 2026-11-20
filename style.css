@@ -112,3 +112,27 @@ dialog.guide[open]{display:flex;flex-direction:column}
   .guide-body img{width:100%;max-height:55vh}
 }
 @media(max-width:520px){.task{flex-direction:column}.guide-btn{align-self:flex-start}}
+
+/* ===== Personnages : filtres, bulles, carte ===== */
+.fpanel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:16px}
+.fpanel[hidden]{display:none}
+.frow{display:flex;align-items:center;gap:10px;margin:4px 0}
+.frow>b{flex:none;width:56px;color:var(--muted);font-size:.85rem}
+.fscroll{display:flex;gap:8px;overflow-x:auto;padding:4px 2px;min-width:0}
+.chip{flex:none;display:inline-flex;align-items:center;gap:6px;background:var(--panel-2);color:var(--text);border:1px solid var(--line);border-radius:999px;padding:5px 12px 5px 8px;font:inherit;font-size:.9rem;cursor:pointer;transition:all var(--t)}
+.chip img{width:22px;height:22px;object-fit:contain}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--accent);color:#1a1530;border-color:var(--accent)}
+.bubbles{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:12px;margin-bottom:18px}
+.bubble{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;color:var(--text);font:inherit;font-size:.78rem;cursor:pointer;padding:4px;min-width:0}
+.bubble img,.bub-ph{width:64px;height:64px;border-radius:50%;object-fit:cover;background:var(--panel-2);border:2px solid var(--line);transition:border-color var(--t),transform var(--t)}
+.bub-ph{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:1.4rem;color:var(--accent)}
+.bubble:hover img,.bubble:hover .bub-ph{border-color:var(--accent);transform:scale(1.06)}
+.bubble.on img,.bubble.on .bub-ph{border-color:var(--gold)}
+.bubble span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pcard{position:relative;max-width:640px}
+.close-card{position:absolute;top:10px;right:10px;padding:4px 10px}
+.sets{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}
+.set-icon{width:72px;height:72px;object-fit:contain} /* icônes transparentes : aucun cadre, fond ni padding */
+.notes{white-space:pre-line}
+@media(max-width:520px){.frow{flex-direction:column;align-items:flex-start;gap:4px}.frow>b{width:auto}.fscroll{width:100%}}
