@@ -41,27 +41,27 @@
 
   /* ---- Accueil : actualités uniquement ---- */
   function vAccueil() {
-    return `<h1>Actualités</h1><div class="grid">${DATA_ACCUEIL.actus.map((a) => card(`<h3>${esc(a.titre)}</h3><p class="muted">${esc(a.date)}</p><p>${esc(a.texte)}</p>${link(a.lien, "Lire la suite")}`)).join("")}</div>`;
+    return `<h1>Actualités</h1><div class="grid">${(DATA_ACCUEIL.actus || []).map((a) => card(`<h3>${esc(a.titre)}</h3><p class="muted">${esc(a.date)}</p><p>${esc(a.texte)}</p>${link(a.lien, "Lire la suite")}`)).join("")}</div>`;
   }
 
   /* ---- Personnages : filtres Voies/Types, bulles cliquables, carte détaillée ---- */
   let pf = { q: "", voie: "", type: "", open: false, sel: "" };
   const chip = (kind, o) => `<button class="chip ${pf[kind] === o.id ? "on" : ""}" data-f="${kind}" data-v="${esc(o.id)}">${safeUrl(o.icone) ? `<img src="${safeUrl(o.icone)}" alt="" data-hide referrerpolicy="no-referrer">` : ""}${esc(o.id)}</button>`;
-  const filtersHtml = () => `<div class="frow"><b>Voies</b><div class="fscroll">${DATA_BUILDS.voies.map((o) => chip("voie", o)).join("")}</div></div><div class="frow"><b>Types</b><div class="fscroll">${DATA_BUILDS.types.map((o) => chip("type", o)).join("")}</div></div>`;
+  const filtersHtml = () => `<div class="frow"><b>Voies</b><div class="fscroll">${(DATA_BUILDS.voies || []).map((o) => chip("voie", o)).join("")}</div></div><div class="frow"><b>Types</b><div class="fscroll">${(DATA_BUILDS.types || []).map((o) => chip("type", o)).join("")}</div></div>`;
 
   function vBuilds(sub) {
-    if (sub === "astuces") return `<div class="grid">${DATA_BUILDS.astuces.map((a) => card(`<h3>${esc(a.titre)}</h3><p>${esc(a.texte)}</p>`)).join("")}</div>`;
+    if (sub === "astuces") return `<div class="grid">${(DATA_BUILDS.astuces || []).map((a) => card(`<h3>${esc(a.titre)}</h3><p>${esc(a.texte)}</p>`)).join("")}</div>`;
     return `<div id="perso-zone"><div class="toolbar"><input type="search" id="q" placeholder="Rechercher un personnage" aria-label="Rechercher" value="${esc(pf.q)}"><button class="btn" id="ftoggle" aria-expanded="${pf.open}">Voies &amp; Types ▾</button><button class="btn ghost" data-freset>Réinitialiser</button></div><div id="fpanel" class="fpanel"></div><div id="bubbles" class="bubbles"></div></div>`;
   }
   const bubbleHtml = (p) => `<button class="bubble" data-p="${esc(p.id)}" title="${esc(p.nom)}" aria-label="${esc(p.nom)}">${state.star === p.id ? '<b class="star-mark">★</b>' : ""}${safeUrl(p.icone) ? `<img src="${safeUrl(p.icone)}" alt="" loading="lazy" data-hide referrerpolicy="no-referrer">` : `<i class="bub-ph">${esc((p.nom || "?")[0])}</i>`}<span>${esc(p.nom)}</span></button>`;
-  const openPerso = (id) => { const p = DATA_BUILDS.persos.find((x) => x.id === id); if (p) openDialog("Fiche personnage", cardHtml(p)); };
+  const openPerso = (id) => { const p = (DATA_BUILDS.persos || []).find((x) => x.id === id); if (p) openDialog("Fiche personnage", cardHtml(p)); };
   // Met à jour les vues qui affichent l'objectif ★
   function refreshStar() {
     if (cur.tab === "builds" && cur.sub === "main") paintPersos();
     else if (cur.tab === "taches" && cur.sub === "main") render_progressOnly();
   }
   // Bulle de l'objectif ★, affichée sous « Entraînement Quotidien » (rien si aucun objectif)
-  const starBlock = () => { const p = DATA_BUILDS.persos.find((x) => x.id === state.star); return p ? `<div class="star-goal"><span class="muted">★ Objectif d'amélioration</span>${bubbleHtml(p)}</div>` : ""; };
+  const starBlock = () => { const p = (DATA_BUILDS.persos || []).find((x) => x.id === state.star); return p ? `<div class="star-goal"><span class="muted">★ Objectif d'amélioration</span>${bubbleHtml(p)}</div>` : ""; };
   function cardHtml(p) {
     const on = state.star === p.id;
     const sets = (p.sets || []).slice(0, 2).map((u) => (safeUrl(u) ? `<img class="set-icon" src="${safeUrl(u)}" alt="Set de reliques" loading="lazy" data-hide referrerpolicy="no-referrer">` : "")).join("");
@@ -73,7 +73,7 @@
     $("#fpanel").hidden = !pf.open;
     $("#ftoggle").setAttribute("aria-expanded", String(pf.open));
     const q = pf.q.toLowerCase();
-    const list = DATA_BUILDS.persos.filter((p) => p.nom.toLowerCase().includes(q) && (!pf.voie || p.voie === pf.voie) && (!pf.type || p.type === pf.type));
+    const list = (DATA_BUILDS.persos || []).filter((p) => p.nom.toLowerCase().includes(q) && (!pf.voie || p.voie === pf.voie) && (!pf.type || p.type === pf.type));
     $("#bubbles").innerHTML = list.map(bubbleHtml).join("") || '<p class="muted">Aucun personnage. Modifiez la recherche ou les filtres.</p>';
   }
   function initPersos() {
@@ -227,9 +227,11 @@
   function render() {
     const tab = TABS.find((t) => t.id === cur.tab);
     const pills = tab.subs.length ? `<div class="pills" role="tablist">${tab.subs.map(([id, n]) => `<button class="pill" role="tab" data-sub="${id}" aria-selected="${cur.sub === id}">${esc(n)}</button>`).join("")}</div>` : "";
-    const body = { accueil: vAccueil, builds: vBuilds, taches: vTaches, tutos: vTutos, ressources: vRessources }[cur.tab](cur.sub);
+    let body;
+    try { body = { accueil: vAccueil, builds: vBuilds, taches: vTaches, tutos: vTutos, ressources: vRessources }[cur.tab](cur.sub); }
+    catch (err) { body = `<div class="card"><h3>Erreur d'affichage</h3><p class="muted">${esc(err.message)}</p><p>Vérifiez que tous les fichiers data-*.js, app.js et index.html ont bien été remplacés par la dernière version.</p></div>`; }
     $("#view").innerHTML = `<div class="fade">${cur.tab === "accueil" ? "" : `<h1>${esc(tab.nom)}</h1>`}${pills}${body}</div>`;
-    if (cur.tab === "builds" && cur.sub === "main") initPersos();
+    if (cur.tab === "builds" && cur.sub === "main" && $("#perso-zone")) initPersos();
     if (cur.tab === "accueil") { state.lastSeenLog = latestLog(); save(); } // le badge disparaît au prochain affichage
     renderNav();
   }
@@ -265,6 +267,4 @@
 
   function copy(text, btn) {
     const ok = () => { const o = btn.textContent; btn.textContent = "Copié ✓"; btn.classList.add("copied"); setTimeout(() => { btn.textContent = o; btn.classList.remove("copied"); }, 1400); };
-    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(ok, () => fallback());
-    else fallback();
-    function fallback() { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); ok(); } catch (e) {} ta
+  
