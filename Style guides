@@ -1,0 +1,17 @@
+/* ===== Tâches : bouton Guide et fenêtre explicative ===== */
+.task{display:flex;gap:8px;margin-bottom:8px}
+.task .check{flex:1;margin-bottom:0;min-width:0}
+.task.alt .check{border-left:3px solid var(--gold)}
+.check .badge{margin-left:6px;vertical-align:middle}
+.guide-btn{flex:none;align-self:center;padding:6px 14px}
+dialog.guide{padding:0;width:min(760px,96vw);max-height:90vh;overflow:hidden}
+dialog.guide[open]{display:flex;flex-direction:column}
+.guide-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.guide-head h2{margin:0}
+.guide-body{padding:16px 18px 22px;overflow-y:auto}
+.guide-body ul{padding-left:20px}
+.guide-body figure{margin:14px 0}
+.guide-body img{display:block;max-width:100%;height:auto;border-radius:8px;border:1px solid var(--line)}
+.guide-body figcaption{color:var(--muted);font-size:.9rem;margin-top:6px}
+.img-ph{border:1px dashed var(--line);border-radius:8px;padding:22px 12px;text-align:center;color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
+@media(max-width:520px){.task{flex-direction:column}.guide-btn{align-self:flex-start}}
