@@ -18,8 +18,7 @@ const DATA_TACHES = {
     /* ---- Hebdomadaires / Bi-hebdomadaires ---- */
     { id: "h-echos", freq: "hebdo", label: "3× Échos de Guerre",
       guide: [
-        ["img", "ITA6"],
-        ["p", "Faites en priorité celui qui demande le moins de matériaux d'élévation (en général les plus récents), avant de faire les reliques."]
+        ["img", "ITA6", "Faites en priorité celui où vous possédez le moins de matériaux d'élévation (en général les plus récents). Vous pouvez le vérifier en cliquant dessus pour chaque échos, avant de finir le reste de votre puissance de pionnier pour les reliques."]
       ] },
     { id: "h-univers", freq: "hebdo", label: "1× Univers Parallèle / Guerre des Monnaies",
       guide: [
@@ -50,7 +49,7 @@ const DATA_TACHES = {
         ["p", "Récupérez les 10 tickets dans la boutique. Le troisième matériau n'est pas obligatoire, mais reste rare."],
         ["img", "ITA15"], ["img", "ITA16"]
       ] },
-    { id: "m-maj", freq: "mensuelle", label: "Récupérer les 2 Résines & 2 Poussières solistellaire", badge: "MÀJ ~43 j", cycle: "maj",
+    { id: "m-maj", freq: "mensuelle", label: "Récupérer les 2 Résines & 2 Poussières solistellaire", badge: "MÀJ", cycle: "maj",
       guide: [
         ["p", "Ces matériaux sont bloqués dans le mode le plus difficile du jeu : l'Arbitre de l'Instable. Le troisième n'est pas obligatoire s'il vous manque des ressources, mais reste un bonus."],
         ["img", "ITA17"]
@@ -63,7 +62,7 @@ const DATA_TACHES = {
     heure: 4,         // réinitialisation à 04:00, heure du serveur
     hebdoJour: 1,     // 1 = lundi
     bihebdo: { ancre: "2026-11-16", jours: 14 },  // À AJUSTER : un jour de début de rotation (AAAA-MM-JJ)
-    maj: { ancre: "2026-11-10", jours: 43 }        // À AJUSTER : jour de début de la version en cours
+    maj: { ancre: "2026-11-10", jours: 43, avanceHeures: 48 }  // À AJUSTER : jour de début de la version. avanceHeures : le reset et le compte à rebours arrivent 48 h plus tôt (mettre 0 pour la fin de période exacte)
   },
 
   // Onglet « MAJ » : un post par version, le plus récent en premier.
