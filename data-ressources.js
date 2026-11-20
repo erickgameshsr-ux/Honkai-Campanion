@@ -64,7 +64,7 @@ const RESSOURCES_DATA = {
       leaks: false,
       description: "Guides de personnages (reliques, cônes de lumière, équipes), conseils d'invocation et rediffusions de défis endgame.",
       url: "https://www.youtube.com/@AlexYukiii/featured",
-      avatar: ""
+      avatar: "assets/alexyuki.png"
     },
     {
       id: "nia",
@@ -72,7 +72,7 @@ const RESSOURCES_DATA = {
       leaks: true,
       description: "Guides complets de personnages, analyses d'optimisation et couverture des leaks et données de bêta.",
       url: "https://www.youtube.com/@nia_twitch/featured",
-      avatar: ""
+      avatar: "assets/nia.png"
     },
     {
       id: "azertii",
@@ -80,7 +80,7 @@ const RESSOURCES_DATA = {
       leaks: true,
       description: "Actualité et méta : guides de personnages, analyses de leaks, invocations et essais endgame.",
       url: "https://www.youtube.com/@azertii/videos",
-      avatar: ""
+      avatar: "assets/azertii.png"
     },
     {
       id: "nepyutsu",
@@ -88,7 +88,7 @@ const RESSOURCES_DATA = {
       leaks: false,
       description: "Quêtes d'histoire complètes et guides d'exploration à 100 % (coffres, énigmes, succès cachés).",
       url: "https://www.youtube.com/@Nepyutsu/playlists",
-      avatar: ""
+      avatar: "assets/nepyutsu.png"
     },
     {
       id: "bladelarkin",
@@ -96,7 +96,7 @@ const RESSOURCES_DATA = {
       leaks: false,
       description: "Résumés d'histoire à chaque mise à jour et analyses du scénario et des factions.",
       url: "https://www.youtube.com/@bladelarkin5486",
-      avatar: ""
+      avatar: "assets/bladelarkin.png"
     },
     {
       id: "hsr-officiel",
@@ -104,7 +104,7 @@ const RESSOURCES_DATA = {
       leaks: false,
       description: "Chaîne officielle : programmes spéciaux avec codes cadeaux, bandes-annonces, courts-métrages et musique.",
       url: "https://www.youtube.com/@HonkaiStarRail/featured",
-      avatar: ""
+      avatar: "assets/hsryoutube.png"
     }
   ]
 };
