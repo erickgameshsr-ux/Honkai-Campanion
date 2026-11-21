@@ -1,6 +1,8 @@
-/* Données : page d'accueil (actualités uniquement). À modifier à chaque patch. */
+/* Données : page « Actualités ». Le plus récent en premier.
+   Champs : titre (obligatoire), image (chemin dans assets/), date, texte, lien (tous facultatifs). */
 const DATA_ACCUEIL = {
   actus: [
-    { id: "actu-patch-x", titre: "Version X.Y : résumé du patch", date: "2026-11-15", texte: "Nouveau personnage, nouvelle zone et équilibrage. Exemple de données à remplacer.", lien: "https://example.com/patch" }
+    { id: "actu-contenus-4-7", titre: "Contenus de la version 4.7", image: "assets/CMAJ4.7-1.webp" },
+    { id: "actu-astra-offert", titre: "Un nouveau personnage 5★ OFFERT", image: "assets/CMAJ-astrafree.webp" }
   ]
 };

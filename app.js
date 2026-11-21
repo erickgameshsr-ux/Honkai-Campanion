@@ -41,7 +41,7 @@
 
   /* ---- Accueil : actualités uniquement ---- */
   function vAccueil() {
-    return `<h1>Actualités</h1><div class="grid">${(DATA_ACCUEIL.actus || []).map((a) => card(`<h3>${esc(a.titre)}</h3><p class="muted">${esc(a.date)}</p><p>${esc(a.texte)}</p>${link(a.lien, "Lire la suite")}`)).join("")}</div>`;
+    return `<h1>Actualités</h1><div class="grid news">${(DATA_ACCUEIL.actus || []).map((a) => card(`<h3>${esc(a.titre)}</h3>${a.date ? `<p class="muted">${esc(a.date)}</p>` : ""}${a.image ? `<img class="news-img" src="${esc(a.image)}" alt="${esc(a.titre)}" loading="lazy" data-ph data-name="${esc(a.image)}">` : ""}${a.texte ? `<p>${esc(a.texte)}</p>` : ""}${link(a.lien, "Lire la suite")}`)).join("")}</div>`;
   }
 
   /* ---- Personnages : filtres Voies/Types, bulles cliquables, carte détaillée ---- */
@@ -61,7 +61,7 @@
     else if (cur.tab === "taches" && cur.sub === "main") render_progressOnly();
   }
   // Bulle de l'objectif ★, affichée sous « Entraînement Quotidien » (rien si aucun objectif)
-  const starBlock = () => { const p = (DATA_BUILDS.persos || []).find((x) => x.id === state.star); return p ? `<div class="star-goal"><span class="muted">★ Objectif d'amélioration</span>${bubbleHtml(p)}</div>` : ""; };
+  const starBlock = () => { const p = (DATA_BUILDS.persos || []).find((x) => x.id === state.star); return p ? `<div class="star-bubble">${bubbleHtml(p)}</div>` : ""; };
   function cardHtml(p) {
     const on = state.star === p.id;
     const sets = (p.sets || []).slice(0, 2).map((u) => (safeUrl(u) ? `<img class="set-icon" src="${safeUrl(u)}" alt="Set de reliques" loading="lazy" data-hide referrerpolicy="no-referrer">` : "")).join("");
