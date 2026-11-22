@@ -3,18 +3,18 @@
   --bg:#0d0c11; --panel:#16141d; --panel-2:#1e1b28; --line:rgba(255,255,255,.09);
   --text:#ece9f5; --muted:#9b97ad; --accent:#b9a7ff; --gold:#f0b94a; --ok:#6fd3a0; --bad:#ff7d8a;
   --r:10px; --gap:16px; --side:250px; --top:52px;
-  --shadow:0 6px 20px rgba(0,0,0,.35); --t:.2s ease;
+  --veil:rgba(8,7,12,.72); --shadow:0 6px 20px rgba(0,0,0,.35); --t:.2s ease;
 }
 *{box-sizing:border-box}
 html{background:var(--bg);overflow-x:hidden}
 body{margin:0;overflow-x:hidden;background:transparent;color:var(--text);font:16px/1.55 "Segoe UI",system-ui,sans-serif}
 
 /* ===== Fond d'écran (PC par défaut) ===== */
-body::before{content:"";position:fixed;inset:0;z-index:-2;background:url("assets/wallpapers/wallpaperHC1-1920.jpg") center/cover no-repeat}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:var(--wall-img, url("assets/wallpapers/wallpaperHC1-1920.jpg")) center/cover no-repeat}
 /* Voile sombre par-dessus l'image (0.72 = assombrissement ; augmentez pour plus sombre) */
-body::after{content:"";position:fixed;inset:0;z-index:-1;background:rgba(8,7,12,.72);pointer-events:none}
+body::after{content:"";position:fixed;inset:0;z-index:-1;background:var(--veil);pointer-events:none}
 /* Tablette et mobile : version allégée, cadrage décalé */
-@media (max-width:959px){body::before{background-image:url("assets/wallpapers/wallpaperHC1-1280.jpg");background-position:60% center}}
+@media (max-width:959px){body::before{background-image:var(--wall-img, url("assets/wallpapers/wallpaperHC1-1280.jpg"));background-position:60% center}}
 h1,h2,h3{line-height:1.25;margin:0 0 .5em}
 h1{font-size:1.6rem} h2{font-size:1.2rem} h3{font-size:1.05rem}
 a{color:var(--accent)} p{margin:.3em 0}
@@ -184,3 +184,22 @@ dialog.guide[open]{display:flex;flex-direction:column}
 .gloss dt{color:var(--gold);font-weight:600;margin-top:12px}
 .gloss dd{margin:2px 0 0;color:var(--text)}
 .astuce hr,.post-body hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+
+/* ===== Skin : jauge et personnalisation ===== */
+.skin-card{max-width:560px}
+.gauge-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.gauge-pct{font-size:1.6rem}
+.gauge{height:14px;background:var(--panel-2);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.gauge i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:999px;transition:width .4s ease}
+.skin-opt.on{background:var(--accent);color:#1a1530;border-color:var(--accent)}
+
+/* ===== Thème clair (contrastes vérifiés : texte foncé sur fonds clairs) ===== */
+:root[data-theme="light"]{
+  --bg:#f3f1f9; --panel:#ffffff; --panel-2:#e9e5f4; --line:rgba(20,15,40,.16);
+  --text:#1c1a26; --muted:#585570; --accent:#5b3fd0; --gold:#8a5a00; --ok:#17794b; --bad:#c22e3e;
+  --veil:rgba(243,241,249,.86); --shadow:0 6px 20px rgba(40,30,80,.15);
+}
+:root[data-theme="light"] .pill[aria-selected="true"],
+:root[data-theme="light"] .chip.on,
+:root[data-theme="light"] .skin-opt.on{color:#fff}
+:root[data-theme="light"] .b-new{color:#fff}

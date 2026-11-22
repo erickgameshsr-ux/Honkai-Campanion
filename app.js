@@ -9,8 +9,26 @@
   const link = (u, t) => (safeUrl(u) ? `<a href="${safeUrl(u)}" target="_blank" rel="noopener noreferrer">${esc(t)}</a>` : "");
 
   /* ---- État + localStorage ---- */
-  let state = { checks: {}, lastSeenLog: "", periods: {}, star: "" };
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s.checks === "object") state = { checks: s.checks, lastSeenLog: s.lastSeenLog || "", periods: s.periods || {}, star: typeof s.star === "string" ? s.star : "" }; } catch (e) {}
+  /* ===== Réglages du Skin (faciles à modifier) ===== */
+  const SKIN_PTS_MAX = 500;          // points nécessaires pour atteindre 100 %
+  const SKIN_BOOST_REDUCTION = 0.7;  // reconquête : seuil réduit de 70 % (500 → 150 points)
+  const SKIN_INACTIVITY_H = 120;     // 5 jours sans tâche cochée = perte du Skin
+  // Barème (invisible côté interface). Les tâches non listées ici (ex. mensuelles) ne rapportent rien.
+  const SKIN_BAREME = {
+    quotidienne: 5,                  // par tâche quotidienne cochée
+    bihebdo: 30,                     // par tâche bi-hebdomadaire cochée
+    parTache: { "h-echos": 10, "h-univers": 20 }, // hebdomadaires : points propres à chaque tâche (id)
+    postMaj: 20,                     // par élément coché dans l'onglet MAJ (définitif)
+    lien: 2                          // par lien externe cliqué, une seule fois par lien unique
+  };
+  // Fonds d'écran : fichiers dans assets/ (wallpaperP1 … wallpaperP5). Changez l'extension ici : ".jpg", ".png" ou ".webp".
+  // Responsive : le fond est en « cover » et se recadre seul sur PC, tablette et mobile (conseil : images de ~1920 px de large).
+  const SKIN_WALL_DIR = "assets/", SKIN_WALL_EXT = ".jpg";
+  const SKIN_WALLS = [["default", "Par défaut"], ["wallpaperP1", "Fond 1"], ["wallpaperP2", "Fond 2"], ["wallpaperP3", "Fond 3"], ["wallpaperP4", "Fond 4"], ["wallpaperP5", "Fond 5"]];
+  const newSkin = () => ({ pts: 0, unlocked: false, boost: false, last: 0, got: {}, links: {}, theme: "dark", wall: "default" });
+
+  let state = { checks: {}, lastSeenLog: "", periods: {}, star: "", skin: newSkin() };
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s.checks === "object") state = { checks: s.checks, lastSeenLog: s.lastSeenLog || "", periods: s.periods || {}, star: typeof s.star === "string" ? s.star : "", skin: Object.assign(newSkin(), s.skin && typeof s.skin === "object" ? s.skin : {}) }; } catch (e) {}
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
   /* ---- Onglets ---- */
@@ -20,6 +38,7 @@
     { id: "tutos", nom: "Tutos", groupe: "Guides", subs: [] },
     { id: "taches", nom: "Tâches & Checklists", groupe: "Progression", subs: [["main", "Récurrentes"], ["maj", "MAJ"]] },
     { id: "ressources", nom: "Ressources conseillées", groupe: "Liens", subs: [["main", "Sites conseillés"], ["yt", "Chaînes YouTube"]] },
+    { id: "skin", nom: "Skin", groupe: "Personnalisation", subs: [] },
   ];
   let cur = { tab: "accueil", sub: "main" };
   const latestLog = () => ((DATA_ACCUEIL.log || [])[0] || {}).id || "";
@@ -161,6 +180,7 @@
   const fmt = (ms) => { const m = Math.max(0, Math.ceil(ms / 6e4)), j = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mi = m % 60; return j ? `${j} j ${h} h` : h ? `${h} h ${String(mi).padStart(2, "0")}` : `${mi} min`; };
   const cdText = (cy) => { const p = periodInfo(cy); return p ? "· reset dans " + fmt(p.next - Date.now()) : ""; };
   function tick() {
+    if (skinCheck()) { save(); applySkin(); if (cur.tab === "skin") render(); }
     if (applyResets() && cur.tab === "taches" && cur.sub === "main") render_progressOnly();
     document.querySelectorAll("[data-cd]").forEach((el) => { el.textContent = cdText(el.dataset.cd); });
   }
@@ -230,11 +250,56 @@
     }
   }, true);
 
+  /* ---- Skin : points invisibles, jauge en %, déblocage, perte après inactivité ---- */
+  const skinMax = () => Math.round(SKIN_PTS_MAX * (state.skin.boost ? 1 - SKIN_BOOST_REDUCTION : 1));
+  const skinPct = () => (state.skin.unlocked ? 100 : Math.min(99, Math.floor((state.skin.pts / skinMax()) * 100)));
+  const majIds = () => new Set((DATA_TACHES.maj || []).flatMap((p) => p.blocs.filter((b) => b[0] === "check").map((b) => b[1])));
+  function skinAdd(n) {
+    const k = state.skin; if (k.unlocked || !n) return;
+    k.pts += n;
+    if (k.pts >= skinMax()) { k.unlocked = true; k.boost = false; k.pts = 0; k.last = Date.now(); } // 100 % : personnalisation débloquée
+  }
+  // Appelée quand une case est COCHÉE (jamais au décochage)
+  function skinOnCheck(id) {
+    const k = state.skin; k.last = Date.now(); // une tâche accomplie relance le délai d'inactivité
+    const t = DATA_TACHES.recurrentes.find((x) => x.id === id);
+    let pts = 0, key = "once";
+    if (t) { // récurrente : points une seule fois par cycle (anti-abus : décocher puis recocher ne redonne rien)
+      const cy = cycleOf(t); pts = SKIN_BAREME.parTache[id] ?? SKIN_BAREME[cy] ?? 0;
+      const p = periodInfo(cy); key = p ? String(p.id) : "once";
+    } else if (majIds().has(id)) pts = SKIN_BAREME.postMaj; // MAJ : définitif
+    if (pts && k.got[id] !== key) { k.got[id] = key; skinAdd(pts); }
+  }
+  // Perte du Skin après 5 jours sans tâche : retour au thème sombre / fond par défaut, jauge à 0 % en mode Boost
+  function skinCheck() {
+    const k = state.skin;
+    if (k.unlocked && k.last && Date.now() - k.last >= SKIN_INACTIVITY_H * 36e5) { k.unlocked = false; k.boost = true; k.pts = 0; k.theme = "dark"; k.wall = "default"; return true; }
+    return false;
+  }
+  function applySkin() {
+    const k = state.skin, on = k.unlocked, root = document.documentElement;
+    root.dataset.theme = on && k.theme === "light" ? "light" : "dark";
+    if (on && k.wall !== "default" && SKIN_WALLS.some((w) => w[0] === k.wall)) root.style.setProperty("--wall-img", `url("${SKIN_WALL_DIR}${k.wall}${SKIN_WALL_EXT}")`);
+    else root.style.removeProperty("--wall-img");
+  }
+  // +points pour chaque lien externe cliqué, une seule fois par lien
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest && e.target.closest("a[href]");
+    if (!a || !/^https?:\/\//i.test(a.getAttribute("href")) || a.hostname === location.hostname) return;
+    if (!state.skin.links[a.href]) { state.skin.links[a.href] = 1; skinAdd(SKIN_BAREME.lien); applySkin(); save(); }
+  });
+  function vSkin() {
+    const k = state.skin, pct = skinPct();
+    const opt = (attr, val, label, on) => `<button class="btn skin-opt ${on ? "on" : ""}" ${attr}="${val}" aria-pressed="${on}">${label}</button>`;
+    const perso = k.unlocked ? `<h3>Thème</h3><div class="row">${opt("data-theme-opt", "dark", "Sombre", k.theme !== "light")}${opt("data-theme-opt", "light", "Clair", k.theme === "light")}</div><h3>Fond d'écran</h3><div class="row">${SKIN_WALLS.map(([id, n]) => opt("data-wall", id, n, k.wall === id)).join("")}</div>` : "";
+    return `<div class="card skin-card"><div class="gauge-head"><strong class="gauge-pct">${pct} %</strong>${!k.unlocked && k.boost ? '<span class="badge b-rarete">Boost</span>' : ""}</div><div class="gauge" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><i style="width:${pct}%"></i></div>${perso}</div>`;
+  }
+
   function render() {
     const tab = TABS.find((t) => t.id === cur.tab);
     const pills = tab.subs.length ? `<div class="pills" role="tablist">${tab.subs.map(([id, n]) => `<button class="pill" role="tab" data-sub="${id}" aria-selected="${cur.sub === id}">${esc(n)}</button>`).join("")}</div>` : "";
     let body;
-    try { body = { accueil: vAccueil, builds: vBuilds, taches: vTaches, tutos: vTutos, ressources: vRessources }[cur.tab](cur.sub); }
+    try { body = { accueil: vAccueil, builds: vBuilds, taches: vTaches, tutos: vTutos, ressources: vRessources, skin: vSkin }[cur.tab](cur.sub); }
     catch (err) { body = `<div class="card"><h3>Erreur d'affichage</h3><p class="muted">${esc(err.message)}</p><p>Vérifiez que tous les fichiers data-*.js, app.js et index.html ont bien été remplacés par la dernière version.</p></div>`; }
     $("#view").innerHTML = `<div class="fade">${cur.tab === "accueil" ? "" : `<h1>${esc(tab.nom)}</h1>`}${pills}${body}</div>`;
     if (cur.tab === "builds" && cur.sub === "main" && $("#perso-zone")) initPersos();
@@ -252,18 +317,20 @@
 
   /* ---- Événements délégués ---- */
   document.addEventListener("click", (e) => {
-    const t = e.target.closest("[data-tab],[data-sub],[data-copy],[data-reset],[data-guide],[data-p]");
+    const t = e.target.closest("[data-tab],[data-sub],[data-copy],[data-reset],[data-guide],[data-p],[data-theme-opt],[data-wall]");
     if (!t) return;
     if (t.dataset.tab) go(t.dataset.tab);
     else if (t.dataset.sub) go(cur.tab, t.dataset.sub);
     else if (t.dataset.copy) copy(t.dataset.copy, t);
     else if (t.dataset.guide) openGuide(t.dataset.guide);
     else if (t.dataset.p) openPerso(t.dataset.p);
+    else if (state.skin.unlocked && (t.dataset.themeOpt || t.dataset.wall)) { if (t.dataset.themeOpt) state.skin.theme = t.dataset.themeOpt === "light" ? "light" : "dark"; else state.skin.wall = t.dataset.wall; save(); applySkin(); render(); }
     else if (t.dataset.reset) { DATA_TACHES.recurrentes.filter((i) => i.freq === t.dataset.reset).forEach((i) => delete state.checks[i.id]); save(); render(); }
   });
   document.addEventListener("change", (e) => {
     const id = e.target.dataset && e.target.dataset.id; if (!id) return;
     if (e.target.checked) state.checks[id] = true; else delete state.checks[id];
+    if (e.target.checked) { skinOnCheck(id); applySkin(); }
     save(); const lab = e.target.closest(".check"); lab.classList.toggle("done", e.target.checked);
     const post = e.target.closest(".post");
     if (post) { const b = post.querySelector(".post-count"); if (b) b.textContent = post.querySelectorAll("input[data-id]:checked").length + "/" + post.querySelectorAll("input[data-id]").length; }
@@ -282,17 +349,17 @@
   const dlg = $("#dlg-save"), msg = (t, bad) => { const m = $("#save-msg"); m.textContent = t; m.style.color = bad ? "var(--bad)" : "var(--ok)"; };
   if ($("#btn-save")) $("#btn-save").onclick = () => { $("#save-text").value = ""; msg(""); dlg.showModal(); };
   $("#btn-close").onclick = () => dlg.close();
-  $("#btn-export").onclick = () => { $("#save-text").value = JSON.stringify({ app: "honkai-companion", v: 1, checks: state.checks, star: state.star }); $("#save-text").select(); msg("Code généré. Copiez-le pour le coller sur un autre appareil."); };
+  $("#btn-export").onclick = () => { $("#save-text").value = JSON.stringify({ app: "honkai-companion", v: 1, checks: state.checks, star: state.star, skin: state.skin }); $("#save-text").select(); msg("Code généré. Copiez-le pour le coller sur un autre appareil."); };
   $("#btn-import").onclick = () => {
     try {
       const d = JSON.parse($("#save-text").value);
       if (d.app !== "honkai-companion" || !d.checks || typeof d.checks !== "object" || Array.isArray(d.checks)) throw new Error();
       const clean = {}; Object.keys(d.checks).forEach((k) => { if (d.checks[k] === true) clean[k] = true; });
-      state.checks = clean; if (typeof d.star === "string") state.star = d.star; save(); render(); msg("Sauvegarde importée avec succès.");
+      state.checks = clean; if (typeof d.star === "string") state.star = d.star; if (d.skin && typeof d.skin === "object") state.skin = Object.assign(newSkin(), d.skin); applySkin(); save(); render(); msg("Sauvegarde importée avec succès.");
     } catch (e) { msg("Code invalide : collez le texte exporté depuis ce site, sans le modifier.", true); }
   };
 
-  try { applyResets(); } catch (e) {}
+  try { skinCheck(); applySkin(); applyResets(); } catch (e) {}
   render();
   setInterval(() => { try { tick(); } catch (e) {} }, 30000);
   document.addEventListener("visibilitychange", tick);
