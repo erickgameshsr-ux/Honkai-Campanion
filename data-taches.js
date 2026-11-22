@@ -51,7 +51,7 @@ const DATA_TACHES = {
       ] },
     { id: "m-maj", freq: "mensuelle", label: "Récupérer les 2 Résines & 2 Poussières solistellaire", badge: "MÀJ", cycle: "maj",
       guide: [
-        ["p", "Ces matériaux sont bloqués dans le mode le plus difficile du jeu : l'Arbitre de l'Instable. Le troisième n'est pas obligatoire s'il vous manque des ressources, mais reste un bonus."],
+        ["p", "Certains de ces matériaux sont bloqués dans le mode le plus difficile du jeu (poussières solistellaire dans l'Arbitre de l'Instable). Le troisième n'est pas obligatoire s'il vous manque des ressources, mais reste un bon bonus."],
         ["img", "ITA17"]
       ] }
   ],
@@ -67,16 +67,35 @@ const DATA_TACHES = {
 
   // Onglet « MAJ » : un post par version, le plus récent en premier.
   // Blocs : ["h","Titre"] ["p","Texte"] ["ul",["a","b"]] ["check","id-unique","Libellé","Astuce facultative"]
-  //         ["video","https://...","Titre"] ["img","assets/maj/xy-1.jpg","Légende facultative"]
+  //         ["video","https://...","Titre"] ["doc","docs/fichier.docx","Titre"] ["img","assets/xy-1.jpg","Légende facultative"] ["hr"]
   maj: [
-    { version: "X.Y", date: "2026-11-10", blocs: [
-      ["h", "À faire en priorité"],
-      ["check", "maj-xy-histoire", "Terminer l'histoire du nouvel acte", "Passez les dialogues pour gagner du temps."],
-      ["check", "maj-xy-event", "Compléter l'événement principal"],
-      ["video", "https://www.youtube.com/", "Guide vidéo"],
+    { version: "4.7", blocs: [
+      ["h", "Tâches"],
+      ["check", "maj47-histoire", "Quête d'histoire principale (Que le rire résonne parmi les étoiles)"],
+      ["check", "maj47-astro", "Nettoyer la nouvelle zone : Astro-cornetto (Planarcadia/Joie)"],
+      ["check", "maj47-allegresse", "Nettoyer la nouvelle zone : Moment d'allégresse (Planarcadia/Morosité)"],
+      ["check", "maj47-pandaroo", "Pandaroo News : récupérer les nouvelles récompenses en terminant les contenus."],
+      ["check", "maj47-secondaires", "Quêtes Secondaires"],
+      ["check", "maj47-gala", "Event (combat) \"Gala de la Paix Interastrale\""],
+      ["check", "maj47-toudoux", "Event : \"Toudoux, le film: Panique en cuisine\""],
+      ["check", "maj47-cw", "MAJ CW (Guerre des Monnaies) : augmenter le niveau d'Élévation au niv.80 & augmenter le Rang jusqu'au A8"],
+      ["check", "maj47-fracture", "Fracture dimensionnelle (23/11 - 07/12) (Farm Relic)"],
+      ["check", "maj47-royaume", "Royaume de l'étrange (11/12 - 23/12) (Farm Relic)"],
+      ["check", "maj47-aleas", "Aléas et reliques (Farm Relic)"],
       ["h", "Notes"],
-      ["p", "Écrivez ici ce que vous voulez : texte, listes, images, liens."],
-      ["img", "assets/maj/XY-1.jpg", "Légende de l'image"]
+      ["p", "Retrouvez ici le résumé de l'histoire de la 4.7 :"],
+      ["video", "https://youtu.be/7QOAnBgTSQM?si=rHCjQg1OZNdKaUHt", "Vidéo : résumé de l'histoire 4.7"],
+      ["doc", "docs/doc-resume-histoire-4.7.docx", "Document : résumé de l'histoire 4.7"],
+      ["p", "Nous arrivons à la fin de Planarcadia et il se peut que votre mémoire vous fasse défaut, retrouvez la playlist des précédents résumés de l'histoire d'Honkai Star Rail :"],
+      ["video", "https://youtube.com/playlist?list=PL1n3IU6n8LpAEVCfDOs32HBM8Buyk0ATY&si=GlTldVS2sdkTJUqq", "Playlist : résumés de l'histoire"],
+      ["hr"],
+      ["h", "Nouvelles zones, les solutions"],
+      ["video", "https://youtu.be/vUd29pMCVew?si=DyXkk-gVRIstuZsD", "Astro-cornetto"],
+      ["video", "https://youtu.be/l5PuLAfTLOo?si=QOA6RjoHq-HlBrrE", "Moment d'allégresse"],
+      ["p", "Vous aurez ici les emplacements des coffres, la résolution des puzzles et les consignes de notes de musique, ainsi que les zones secrètes des Sauts Interdimensionnels !"],
+      ["hr"],
+      ["p", "La Guerre des Monnaies est MAJ, voici un guide pratique pour mieux l'appréhender :"],
+      ["doc", "docs/Fiche de Synthèse _ Maîtriser Currency Wars 2.0 (Version 4.7).docx", "Fiche de synthèse : Maîtriser Currency Wars 2.0 (Version 4.7)"]
     ] }
   ]
 };

@@ -40,8 +40,11 @@
   const badges = (arr) => `<div class="badges">${arr.filter(Boolean).join("")}</div>`;
 
   /* ---- Accueil : actualités uniquement ---- */
+  const frDate = (d) => (/^\d{4}-\d{2}-\d{2}$/.test(d || "") ? `${d.slice(8, 10)}/${d.slice(5, 7)}/${d.slice(0, 4)}` : d || "");
+  // Plus récent en premier (date AAAA-MM-JJ) ; sans date = en bas
+  const sortedActus = () => (DATA_ACCUEIL.actus || []).slice().sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
   function vAccueil() {
-    return `<h1>Actualités</h1><div class="grid news">${(DATA_ACCUEIL.actus || []).map((a) => card(`<h3>${esc(a.titre)}</h3>${a.date ? `<p class="muted">${esc(a.date)}</p>` : ""}${a.image ? `<img class="news-img" src="${esc(a.image)}" alt="${esc(a.titre)}" loading="lazy" data-ph data-name="${esc(a.image)}">` : ""}${a.texte ? `<p>${esc(a.texte)}</p>` : ""}${link(a.lien, "Lire la suite")}`)).join("")}</div>`;
+    return `<h1>Actualités</h1><div class="grid news">${sortedActus().map((a) => card(`<h3>${esc(a.titre)}</h3>${a.date ? `<p class="muted">${esc(frDate(a.date))}</p>` : ""}${a.image ? `<img class="news-img" src="${esc(a.image)}" alt="${esc(a.titre)}" loading="lazy" data-ph data-name="${esc(a.image)}">` : ""}${a.texte ? `<p>${esc(a.texte)}</p>` : ""}${link(a.lien, "Lire la suite")}`)).join("")}</div>`;
   }
 
   /* ---- Personnages : filtres Voies/Types, bulles cliquables, carte détaillée ---- */
@@ -91,7 +94,7 @@
   /* ---- Tutos ---- */
   function vTutos() {
     const t = DATA_BUILDS.tutos || [];
-    return t.length ? `<div class="grid">${t.map((x) => card(`<h3>${esc(x.titre)}</h3><p>${esc(x.resume)}</p>${(x.etapes || []).length ? `<ol>${x.etapes.map((e) => `<li>${esc(e)}</li>`).join("")}</ol>` : ""}${link(x.video, "▶ Vidéo")}`)).join("")}</div>` : '<p class="muted">Aucun tuto pour le moment.</p>';
+    return t.length ? `<div class="grid astuces">${t.map((x) => `<article class="card astuce"><h3>${esc(x.titre)}</h3>${x.blocs ? x.blocs.map(blocHtml).join("") : `<p>${esc(x.resume)}</p>${(x.etapes || []).length ? `<ol>${x.etapes.map((e) => `<li>${esc(e)}</li>`).join("")}</ol>` : ""}${link(x.video, "▶ Vidéo")}`}</article>`).join("")}</div>` : '<p class="muted">Aucun tuto pour le moment.</p>';
   }
 
   const IMG_DIR = "assets/taches/"; // dossier des images de guides (ITA1.jpg ... ITA17.jpg)
@@ -115,6 +118,9 @@
     if (b[0] === "check") return checkItem({ id: b[1], label: b[2], tip: b[3] || "" });
     if (b[0] === "video") return `<p>${link(b[1], "▶ " + (b[2] || "Vidéo"))}</p>`;
     if (b[0] === "img") return `<figure><img src="${esc(b[1])}" alt="${esc(b[2] || "")}" loading="lazy" data-ph data-name="${esc(b[1])}">${b[2] ? `<figcaption>${esc(b[2])}</figcaption>` : ""}</figure>`;
+    if (b[0] === "doc") return /^\s*(javascript|data):/i.test(b[1]) ? "" : `<p><a href="${esc(encodeURI(b[1]))}" target="_blank" rel="noopener noreferrer" download>📄 ${esc(b[2] || "Document")}</a></p>`;
+    if (b[0] === "hr") return "<hr>";
+    if (b[0] === "dl") return `<dl class="gloss">${b[1].map(([t, d]) => `<dt>${esc(t)}</dt><dd>${esc(d)}</dd>`).join("")}</dl>`;
     return "";
   };
   function vMaj() {

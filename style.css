@@ -178,3 +178,9 @@ dialog.guide[open]{display:flex;flex-direction:column}
 /* ===== Icônes de sets de reliques : même taille que les bulles de personnages (64 px), sans cadre ===== */
 .sets{align-items:center;gap:12px}
 .guide-body .set-icon{display:inline-block;width:64px;height:64px;max-width:none;max-height:none;margin:0;border:0;border-radius:0;background:none;object-fit:contain}
+
+/* ===== Glossaire, séparateurs, documents ===== */
+.gloss{margin:6px 0 0}
+.gloss dt{color:var(--gold);font-weight:600;margin-top:12px}
+.gloss dd{margin:2px 0 0;color:var(--text)}
+.astuce hr,.post-body hr{border:0;border-top:1px solid var(--line);margin:16px 0}

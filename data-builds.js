@@ -45,6 +45,20 @@ const DATA_BUILDS = {
 
   // Astuces : soit « texte » simple, soit « blocs » (["p","texte"], ["h","Titre"], ["ul",[...]], ["img","assets/x.jpg","légende"], ["video","url","titre"]).
   astuces: [
+    { id: "astuce-glossaire", titre: "Glossaire des Statistiques", blocs: [
+      ["dl", [
+        ["PV / HP : Points de Vie", "Survie et encaissement des dégâts (sert aussi au scaling de certains personnages)."],
+        ["ATQ / ATK : Attaque", "Base de calcul des dégâts pour la majorité des personnages offensifs."],
+        ["DEF : Défense", "Réduction des dégâts subis (sert aussi au scaling de certains personnages)."],
+        ["VIT / SPD : Vitesse", "Fréquence des actions et position dans l'ordre du tour (sert aussi au scaling de certains personnages)."],
+        ["TC / CR : Chance de coups critiques", "Probabilité d'infliger un coup critique."],
+        ["DC / CD : Dégâts critiques", "Multiplicateur de dégâts lorsqu'un coup critique se déclenche."],
+        ["BE : Effets de rupture", "Augmente les dégâts de rupture, les dégâts de rupture additionnels et le délai de récupération (sert aussi au scaling de certains personnages)."],
+        ["EHR : Chance d'apporter des effets", "Augmente la probabilité d'appliquer des malus ou altérations d'état (sert aussi au scaling de certains personnages)."],
+        ["RES : Résistance aux effets", "Réduit les chances de subir des malus et contrôles ennemis."],
+        ["ER : Régénération d'énergie", "Accélère la recharge de l'ULT / déchaînement."]
+      ]]
+    ] },
     { id: "astuce-filtres-reliques", titre: "Comment se servir de l'outil de Configuration de Filtres", blocs: [
       ["p", "Pour trier les reliques intéressantes pour son personnage il existe un outil qui permet de faire table rase sur les reliques inintéressantes."],
       ["p", "Comme montré ci-dessous dans les illustrations, il suffit d'aller sur son personnage, de cliquer sur une des reliques et un bouton ouvre directement sur l'outil de Configuration de Filtres."],
@@ -58,8 +72,11 @@ const DATA_BUILDS = {
     { id: "astuce-2", titre: "Prioriser les statistiques", texte: "Regardez la stat principale de chaque pièce avant les sous-stats." }
   ],
 
-  // Onglet « Tutos » : titre, résumé, étapes (facultatif) et lien vidéo (facultatif).
+  // Onglet « Tutos » : soit titre + résumé (+ étapes, vidéo), soit titre + « blocs » (mêmes blocs que les astuces, plus ["doc","docs/fichier.docx","Titre"]).
   tutos: [
-    { id: "tuto-1", titre: "Tuto exemple", resume: "Décrivez ici le sujet du tutoriel.", etapes: ["Première étape", "Deuxième étape"], video: "" }
+    { id: "tuto-guerre-monnaies", titre: "La Guerre des Monnaies 2.0", blocs: [
+      ["p", "Voici un guide pratique pour mieux appréhender la nouvelle MAJ du mode :"],
+      ["doc", "docs/Fiche de Synthèse _ Maîtriser Currency Wars 2.0 (Version 4.7).docx", "Fiche de synthèse : Maîtriser Currency Wars 2.0 (Version 4.7)"]
+    ] }
   ]
 };
