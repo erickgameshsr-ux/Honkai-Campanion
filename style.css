@@ -133,7 +133,7 @@ dialog.guide[open]{display:flex;flex-direction:column}
 .pcard{position:relative;max-width:640px}
 .close-card{position:absolute;top:10px;right:10px;padding:4px 10px}
 .sets{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:8px}
-.set-icon{width:72px;height:72px;object-fit:contain} /* icônes transparentes : aucun cadre, fond ni padding */
+.set-icon{width:64px;height:64px;object-fit:contain} /* icônes transparentes : aucun cadre, fond ni padding */
 .notes{white-space:pre-line}
 @media(max-width:520px){.frow{flex-direction:column;align-items:flex-start;gap:4px}.frow>b{width:auto}.fscroll{width:100%}}
 
@@ -174,3 +174,7 @@ dialog.guide[open]{display:flex;flex-direction:column}
 .astuce figure{margin:14px 0}
 .astuce img{display:block;margin:0 auto;max-width:100%;height:auto;max-height:62vh;object-fit:contain;border-radius:8px;border:1px solid var(--line)}
 .astuce figcaption{color:var(--muted);font-size:.9rem;margin-top:6px}
+
+/* ===== Icônes de sets de reliques : même taille que les bulles de personnages (64 px), sans cadre ===== */
+.sets{align-items:center;gap:12px}
+.guide-body .set-icon{display:inline-block;width:64px;height:64px;max-width:none;max-height:none;margin:0;border:0;border-radius:0;background:none;object-fit:contain}
