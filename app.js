@@ -50,7 +50,7 @@
   const filtersHtml = () => `<div class="frow"><b>Voies</b><div class="fscroll">${(DATA_BUILDS.voies || []).map((o) => chip("voie", o)).join("")}</div></div><div class="frow"><b>Types</b><div class="fscroll">${(DATA_BUILDS.types || []).map((o) => chip("type", o)).join("")}</div></div>`;
 
   function vBuilds(sub) {
-    if (sub === "astuces") return `<div class="grid">${(DATA_BUILDS.astuces || []).map((a) => card(`<h3>${esc(a.titre)}</h3><p>${esc(a.texte)}</p>`)).join("")}</div>`;
+    if (sub === "astuces") return `<div class="grid astuces">${(DATA_BUILDS.astuces || []).map((a) => `<article class="card astuce"><h3>${esc(a.titre)}</h3>${a.blocs ? a.blocs.map(blocHtml).join("") : `<p>${esc(a.texte)}</p>`}</article>`).join("")}</div>`;
     return `<div id="perso-zone"><div class="toolbar"><input type="search" id="q" placeholder="Rechercher un personnage" aria-label="Rechercher" value="${esc(pf.q)}"><button class="btn" id="ftoggle" aria-expanded="${pf.open}">Voies &amp; Types ▾</button><button class="btn ghost" data-freset>Réinitialiser</button></div><div id="fpanel" class="fpanel"></div><div id="bubbles" class="bubbles"></div></div>`;
   }
   const bubbleHtml = (p) => `<button class="bubble" data-p="${esc(p.id)}" title="${esc(p.nom)}" aria-label="${esc(p.nom)}">${state.star === p.id ? '<b class="star-mark">★</b>' : ""}${safeUrl(p.icone) ? `<img src="${safeUrl(p.icone)}" alt="" loading="lazy" data-hide referrerpolicy="no-referrer">` : `<i class="bub-ph">${esc((p.nom || "?")[0])}</i>`}<span>${esc(p.nom)}</span></button>`;

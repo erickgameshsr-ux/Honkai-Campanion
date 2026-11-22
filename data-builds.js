@@ -22,18 +22,38 @@ const DATA_BUILDS = {
     { id: "Glace", icone: "https://act-webstatic.hoyoverse.com/event-static-hoyowiki-admin/2024/03/27/e7fda5adc3b8ee20cef753b61ff0ed08_8813940564670780996.png" }
   ],
 
-  // Un personnage = une bulle (icone) + une carte (sets, notes, jusqu'à 3 vidéos).
-  // « nom » sert à la recherche et à l'infobulle, il n'est pas affiché dans la carte.
+  // Un personnage = une bulle (icone) + une fiche (sets, notes, jusqu'à 3 vidéos).
+  // « nom » sert à la recherche et à l'infobulle. « icone » : URL de l'image de la bulle (sinon une lettre s'affiche).
+  // « voie » et « type » doivent s'écrire comme dans les listes ci-dessus (ils servent aux filtres).
+  // « role » est conservé pour plus tard (non affiché dans la fiche).
   persos: [
-    { id: "perso-1", nom: "Personnage Exemple", icone: "", voie: "Destruction", type: "Feu",
-      sets: ["", ""],                       // 2 URLs d'icônes de sets de reliques (fond transparent)
-      notes: "Écrivez ici vos informations de construction.",
-      videos: ["https://www.youtube.com/", "", ""] },
-    { id: "perso-2", nom: "Soutien Exemple", icone: "", voie: "Harmonie", type: "Glace",
-      sets: ["", ""], notes: "Exemple à remplacer.", videos: ["", "", ""] }
+    { id: "perso-nocterna", nom: "Nocterna", icone: "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/08/04/37134325/1306615dd73b16ab22968142bc6a2e03_711217016507104817.png?x-oss-process=image%2Fformat%2Cwebp", voie: "Souvenir", type: "Glace", role: "Support / Sub-DPS",
+      sets: [
+        "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/02/12/77791097/9a348f0181eed9aeb817c7a9b6311bde_1152942398567428191.png?x-oss-process=image%2Fformat%2Cwebp",
+        "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/02/26/11859656/7251b84e4bf2b72203cbc992df5e1f8b_2336671630880359209.png?x-oss-process=image%2Fformat%2Cwebp"
+      ],
+      notes: "💯 Statistiques Globales :\n\n• PV: +9 000 = 11,5% /Relique\n• TC: 60% = 6% /Relique\n• DC: +180% = 10,5% /Relique\n\n⚔️ Reliques :\n\n• Corps : DC\n• Pieds : PV%\n• Orbe : PV%\n• Corde : PV%\n\n🔻 Priorités des sous-statistiques :\n• TC › DC › PV% › PV",
+      videos: ["https://youtu.be/-ZH__DkYyqs", "", ""] },
+    { id: "perso-dhil", nom: "Dan Heng Imbibitor Lunae", icone: "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/05/8454003/107dc42aa40d8eae8586c1910e85e217_2761183077280600224.png?x-oss-process=image%2Fformat%2Cwebp", voie: "Destruction", type: "Imaginaire", role: "DPS",
+      sets: [
+        "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/10/19/77791097/fe5592f7a27ad70693d9786fa2f399af_2723699484675902102.png?x-oss-process=image%2Fformat%2Cwebp",
+        "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/02/12/77791097/64fdf0f8bd1e5597995c366ea1915b91_2548329267886427373.png?x-oss-process=image%2Fformat%2Cwebp"
+      ],
+      notes: "💯 Statistiques Globales :\n\n• ATQ: +3 000 = 4% /Relique\n• TC: +90% = 4,5% /Relique\n• DC: +170% = 14,5% /Relique\n\n⚔️ Reliques :\n\n• Corps : TC\n• Pieds : ATQ%\n• Orbe : DGT Imaginaires\n• Corde : ATQ%\n\n🔻 Priorités des sous-statistiques :\n• TC › DC › ATQ%",
+      videos: ["https://youtu.be/S8tgMM2mXdc?t=510", "", ""] }
   ],
 
+  // Astuces : soit « texte » simple, soit « blocs » (["p","texte"], ["h","Titre"], ["ul",[...]], ["img","assets/x.jpg","légende"], ["video","url","titre"]).
   astuces: [
+    { id: "astuce-filtres-reliques", titre: "Comment se servir de l'outil de Configuration de Filtres", blocs: [
+      ["p", "Pour trier les reliques intéressantes pour son personnage il existe un outil qui permet de faire table rase sur les reliques inintéressantes."],
+      ["p", "Comme montré ci-dessous dans les illustrations, il suffit d'aller sur son personnage, de cliquer sur une des reliques et un bouton ouvre directement sur l'outil de Configuration de Filtres."],
+      ["img", "assets/HT1.jpg"], ["img", "assets/HT2.jpg"], ["img", "assets/HT3.jpg"],
+      ["p", "Ici vous pourrez choisir l'ensemble de reliques, les statistiques principales et secondaires. Si vous avez un doute sur les statistiques du personnage, n'hésitez pas à le vérifier sur sa fiche personnage dans l'onglet Guide/Personnages. Vous pouvez aussi aller consulter les sites ou chaînes youtube dans Ressources conseillés."],
+      ["img", "assets/HT4.jpg"], ["img", "assets/HT5.jpg"],
+      ["p", "Une fois configuré, n'oubliez pas d'enregistrer le filtre pour le réutiliser plus tard."],
+      ["img", "assets/HT6.jpg"]
+    ] },
     { id: "astuce-1", titre: "Commencer par le niveau du personnage", texte: "Montez d'abord le niveau et les compétences clés avant l'équipement." },
     { id: "astuce-2", titre: "Prioriser les statistiques", texte: "Regardez la stat principale de chaque pièce avant les sous-stats." }
   ],
