@@ -90,6 +90,8 @@ const DATA_TACHES = {
       ["video", "https://youtube.com/playlist?list=PL1n3IU6n8LpAEVCfDOs32HBM8Buyk0ATY&si=GlTldVS2sdkTJUqq", "Playlist : résumés de l'histoire"],
       ["hr"],
       ["h", "Nouvelles zones, les solutions"],
+      ["video", "https://youtu.be/glz1jvODWLU?si=GYeHkyeowf0HVZ85", "Mélodie Bizarre Saut Interastral (Astro Cornetto)"],
+      ["video", "https://youtu.be/Hl5560cCR3M?si=o-Xc6x1nQMIVTd86", "Emplacement Pandaroo (Astro-cornetto)"],
       ["video", "https://youtu.be/vUd29pMCVew?si=DyXkk-gVRIstuZsD", "Astro-cornetto"],
       ["video", "https://youtu.be/l5PuLAfTLOo?si=QOA6RjoHq-HlBrrE", "Moment d'allégresse"],
       ["p", "Vous aurez ici les emplacements des coffres, la résolution des puzzles et les consignes de notes de musique, ainsi que les zones secrètes des Sauts Interdimensionnels !"],

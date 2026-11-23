@@ -32,7 +32,7 @@ const DATA_BUILDS = {
         "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/02/12/77791097/9a348f0181eed9aeb817c7a9b6311bde_1152942398567428191.png?x-oss-process=image%2Fformat%2Cwebp",
         "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/02/26/11859656/7251b84e4bf2b72203cbc992df5e1f8b_2336671630880359209.png?x-oss-process=image%2Fformat%2Cwebp"
       ],
-      notes: "💯 Statistiques Globales :\n\n• PV: +9 000 = 11,5% /Relique\n• TC: 60% = 6% /Relique\n• DC: +180% = 10,5% /Relique\n\n⚔️ Reliques :\n\n• Corps : DC\n• Pieds : PV%\n• Orbe : PV%\n• Corde : PV%\n\n🔻 Priorités des sous-statistiques :\n• TC › DC › PV% › PV",
+      notes: "💯 Statistiques Globales :\n\n• PV: +9 000 = 11,5% /Relique\n• TC: 65% = 7,5% /Relique\n• DC: +180% = 10,5% /Relique\n\n⚔️ Reliques :\n\n• Corps : DC\n• Pieds : PV%\n• Orbe : PV%\n• Corde : PV%\n\n🔻 Priorités des sous-statistiques :\n• TC › DC › PV% › PV",
       videos: ["https://youtu.be/-ZH__DkYyqs", "", ""] },
     { id: "perso-dhil", nom: "Dan Heng Imbibitor Lunae", icone: "https://upload-static.hoyoverse.com/hoyolab-wiki/2023/07/05/8454003/107dc42aa40d8eae8586c1910e85e217_2761183077280600224.png?x-oss-process=image%2Fformat%2Cwebp", voie: "Destruction", type: "Imaginaire", role: "DPS",
       sets: [
@@ -40,7 +40,14 @@ const DATA_BUILDS = {
         "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/02/12/77791097/64fdf0f8bd1e5597995c366ea1915b91_2548329267886427373.png?x-oss-process=image%2Fformat%2Cwebp"
       ],
       notes: "💯 Statistiques Globales :\n\n• ATQ: +3 000 = 4% /Relique\n• TC: +90% = 4,5% /Relique\n• DC: +170% = 14,5% /Relique\n\n⚔️ Reliques :\n\n• Corps : TC\n• Pieds : ATQ%\n• Orbe : DGT Imaginaires\n• Corde : ATQ%\n\n🔻 Priorités des sous-statistiques :\n• TC › DC › ATQ%",
-      videos: ["https://youtu.be/S8tgMM2mXdc?t=510", "", ""] }
+      videos: ["https://youtu.be/S8tgMM2mXdc?t=510", "", ""] },
+    { id: "perso-robin-estivaria", nom: "Robin Estivaria", icone: "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/08/26/5308864/d1c23a99518ef85597431ecb2087ad7e_879640091981092365.png?x-oss-process=image%2Fformat%2Cwebp", voie: "Souvenir", type: "Vent", role: "Support",
+      sets: [
+        "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2025/10/02/328220139/e82b7e88ec131d003f4ae4986d4ff99c_6591467026495076069.png?x-oss-process=image%2Fformat%2Cwebp",
+        "https://act-upload.hoyoverse.com/event-ugc-hoyowiki/2026/10/17/328177121/4724b428150d178ba61a0174a4e2542e_1197209218926235378.png?x-oss-process=image%2Fformat%2Cwebp"
+      ],
+      notes: "💯 Statistiques Globales :\n\n• PV: +6000 = 5% /Relique\n• VIT: 141 = 2 /Relique\n• TC: 50% = 6,5% /Relique\n\n⚔️ Reliques :\n\n• Corps : PV%\n• Pieds : VIT\n• Orbe : PV%\n• Corde : ER\n\n🔻 Priorités des sous-statistiques :\n• TC › VIT › PV% › DC",
+      videos: ["https://youtu.be/93WPmXreibk", "https://youtu.be/w1WA7Vrv-FE", ""] }
   ],
 
   // Astuces : soit « texte » simple, soit « blocs » (["p","texte"], ["h","Titre"], ["ul",[...]], ["img","assets/x.jpg","légende"], ["video","url","titre"]).
